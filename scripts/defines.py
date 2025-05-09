@@ -18,7 +18,7 @@ ENABLE_SENSORS = {
     "TfOdom":True
 }
 
-ENABLE_REALTIME_SYNC = False  # If false, the simulator operates at maximum performance. Only turn on this option when simulator runs faster than desired Hz.
+ENABLE_REALTIME_SYNC = True  # If false, the simulator operates at maximum performance. Only turn on this option when simulator runs faster than desired Hz.
 
 DISP_FPS        = 1<<0
 DISP_AXIS       = 1<<1
