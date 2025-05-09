@@ -1,0 +1,43 @@
+<?xml version="1.0" ?>
+<robot name="sensor_pack" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <link name="sensors_link">
+    <visual>
+      <origin xyz="-0.0 0 0.0" rpy="0 0 0"/>
+    </visual>
+  </link>
+
+  <joint name="imu_joint" type="fixed">
+    <parent link="sensors_link"/>
+    <child link="imu_link"/>
+    <origin xyz="0.0 0 0.0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="imu_link"/>
+
+  <joint name="camera_joint" type="fixed">
+    <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+    <parent link="sensors_link"/>
+    <child link="camera_link"/>
+  </joint>
+
+  <link name="camera_link">
+    <visual>
+     <origin xyz="0 0 0" rpy="0 0 0"/>
+    </visual>
+  </link>
+
+  <joint name="lidar_joint" type="fixed">
+    <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+      <parent link="sensors_link"/>
+    <child link="lidar_link"/>
+  </joint>
+
+
+    <link name="lidar_link">
+    <visual>
+     <origin xyz="0 0 0" rpy="0 0 0"/>
+    </visual>
+  </link>
+
+</robot>
