@@ -1,8 +1,8 @@
 
 CAVE_USD_PATH = "/home/do/Desktop/IsaacSIM-Robot-Simulation/usd_scenes/Cave/cave_only.usd"
 OFFICE_USD_PATH = "/home/do/Desktop/IsaacSIM-Robot-Simulation/usd_scenes/Collected_office/office.usd"
-RIVERMARK_USD_PATH = "/home/do/Desktop/IsaacSIM-Robot-Simulation/usd_scenes/Outdoor/Rivermark/rivermark_turtlebot.usd"
-CITY_USD_PATH = "/home/do/Desktop/IsaacSIM-Robot-Simulation/usd_scenes/Full_Gameready_City_Buildings/city_turtlebot_simplified.usd"
+RIVERMARK_USD_PATH = "/home/do/Desktop/IsaacSIM-Robot-Simulation/usd_scenes/Outdoor/Rivermark/rivermark_simple_flattened.usd"
+GAMEREADY_CITY_USD_PATH = "/home/do/Desktop/IsaacSIM-Robot-Simulation/usd_scenes/Full_Gameready_City_Buildings/city_turtlebot_simplified.usd"
 NVIDIA_CITY_USD_PATH = "/home/do/Desktop/IsaacSIM-Robot-Simulation/usd_scenes/AECO_CityDemoPack_NVD@10011/Demos/AEC/TowerDemo/CityDemopack/World_CityDemopack_turtlebot.usd"
 SENSOR_PACK_URDF_PATH="/home/do/Desktop/IsaacSIM-Robot-Simulation/sensor_pack/sensor_pack.urdf"
 
@@ -11,7 +11,7 @@ RENDER_DT = 1/30
 
 ENABLE_SENSORS = {
     "Camera":True,
-    "Camera2":True, # first Camera must be set to True before using this
+    "Camera2":False, # first Camera must be set to True before using this
     "Imu":True,
     "Lidar":True,
     "DebugLidar":False,
@@ -52,9 +52,11 @@ ROS_CAMERA_GRAPH_PATH = "/ROS_Camera"
 ROS_IMU_GRAPH_PATH = "/ROS_IMU"
 ROS_TF_ODOM_GRAPH_PATH = "/ROS_Tf_Odom"
 
-LIDAR_MODEL = "OS0_REV6_128ch10hz1024res"
-
-
+# LIDAR_MODEL = "OS0_REV6_128ch30hz1024res"
+# LIDAR_MODEL = "OS0_REV6_128ch30hz512res"
+# LIDAR_MODEL = "OS0_REV6_64ch30hz1024res"
+LIDAR_MODEL = "Livox_MID360"
+# LIDAR_MODEL = "Simple_Example_Solid_State"
 
 EXTENSIONS = [
     "omni.graph.window.core", # OmniGraph

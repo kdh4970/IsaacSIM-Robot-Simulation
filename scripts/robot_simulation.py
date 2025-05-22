@@ -18,7 +18,7 @@ lstPreset = [
     "Cave + turtlebot3_burger",
     "Office + turtlebot3_burger",
     "Rivermark + turtlebot3_burger",
-    "City + turtlebot3_burger",
+    "GameReady City + turtlebot3_burger",
     "NVIDIA_City + turtlebot3_burger",
     "Custom + Custom"]
 preset_selector = PresetSelector(lstPreset)
@@ -42,8 +42,8 @@ elif env=="Rivermark" and robot =="turtlebot3_burger":
     robotPrimPath = "/World/turtlebot3_burger"
     robotPosition = np.array([0, 0.0, 5.9])
     sensorPackPrimPath = robotPrimPath + "/base_footprint/base_link/sensor_pack"
-elif env=="City" and robot =="turtlebot3_burger":
-    usdPath=defines.CITY_USD_PATH
+elif env=="GameReady City" and robot =="turtlebot3_burger":
+    usdPath=defines.GAMEREADY_CITY_USD_PATH
     robotPrimPath = "/scene/turtlebot3_burger"
     robotPosition = np.array([0, 0.0, 0.05])
     sensorPackPrimPath = robotPrimPath + "/base_footprint/base_link/sensor_pack"
@@ -165,8 +165,10 @@ else:
         position=robotPosition,
         )
     )
-
-my_controller = DifferentialController(name="simple_control", wheel_radius=0.025, wheel_base=0.16,max_linear_speed=1.5,max_angular_speed=1.0)
+if env == "Rivermark":
+    my_controller = DifferentialController(name="simple_control", wheel_radius=0.25, wheel_base=1.6,max_linear_speed=2.0,max_angular_speed=1.0)
+else:
+    my_controller = DifferentialController(name="simple_control", wheel_radius=0.025, wheel_base=0.16,max_linear_speed=1.5,max_angular_speed=1.0)
 
 
 ## Sensor Pack
@@ -232,7 +234,7 @@ if defines.ENABLE_SENSORS["Camera"]:
         xform_api.SetTranslate(Gf.Vec3d(0.06, 0.0, 0.32)) # this for 2x scale
         # xform_api.SetTranslate(Gf.Vec3d(0.1, 0.0, 0.5)) # this for 3x scale
     elif env=="Rivermark":
-        xform_api.SetTranslate(Gf.Vec3d(0.06, 0.0, 0.7))
+        xform_api.SetTranslate(Gf.Vec3d(0.0, 0.0, 0.13))
     elif env=="City":
         xform_api.SetTranslate(Gf.Vec3d(0.06, 0.0, 0.32))
     elif env=="NVIDIA_City":
@@ -467,79 +469,6 @@ if defines.ENABLE_SENSORS["TfOdom"]:
             ],
         },
     )
-    # (ros_tf_odom_graph, _, _, _) = og.Controller.edit(
-    #     {
-    #         "graph_path": defines.ROS_TF_ODOM_GRAPH_PATH,
-    #         "evaluator_name": "push",
-    #         "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_ONDEMAND,
-    #     },
-    #     {
-    #         keys.CREATE_NODES: [
-    #             ("OnPhysicsStep", "isaacsim.core.nodes.OnPhysicsStep"),
-    #             ("ROS2Context","isaacsim.ros2.bridge.ROS2Context"),
-    #             ("IsaacComputeOdometry", "isaacsim.core.nodes.IsaacComputeOdometry"),
-    #             ("ROS2PublishOdometry", "isaacsim.ros2.bridge.ROS2PublishOdometry"),
-    #             ("ROS2PublishRawTransformTree", "isaacsim.ros2.bridge.ROS2PublishRawTransformTree"),
-    #             ("ROS2PublishRawTransformTree1", "isaacsim.ros2.bridge.ROS2PublishRawTransformTree"),
-    #             ("ROS2PublishTransformTree", "isaacsim.ros2.bridge.ROS2PublishTransformTree"),
-    #             ("ROS2PublishTransformTreeSensorPack", "isaacsim.ros2.bridge.ROS2PublishTransformTree"),
-    #             ("IsaacReadSimulationTime", "isaacsim.core.nodes.IsaacReadSimulationTime"),
-    #         ],
-    #         keys.CONNECT: [
-    #             ("OnPhysicsStep.outputs:step", "IsaacComputeOdometry.inputs:execIn"),
-    #             ("OnPhysicsStep.outputs:step", "ROS2PublishRawTransformTree.inputs:execIn"),
-    #             ("OnPhysicsStep.outputs:step", "ROS2PublishRawTransformTree1.inputs:execIn"),
-    #             ("OnPhysicsStep.outputs:step", "ROS2PublishTransformTree.inputs:execIn"),
-    #             ("OnPhysicsStep.outputs:step", "ROS2PublishTransformTreeSensorPack.inputs:execIn"),
-    #             ("ROS2Context.outputs:context", "ROS2PublishOdometry.inputs:context"),
-    #             ("ROS2Context.outputs:context", "ROS2PublishRawTransformTree.inputs:context"),
-    #             ("ROS2Context.outputs:context", "ROS2PublishRawTransformTree1.inputs:context"),
-    #             ("ROS2Context.outputs:context", "ROS2PublishTransformTree.inputs:context"),
-    #             ("ROS2Context.outputs:context", "ROS2PublishTransformTreeSensorPack.inputs:context"),
-    #             ("IsaacReadSimulationTime.outputs:simulationTime", "ROS2PublishOdometry.inputs:timeStamp"),
-    #             ("IsaacReadSimulationTime.outputs:simulationTime", "ROS2PublishRawTransformTree.inputs:timeStamp"),
-    #             ("IsaacReadSimulationTime.outputs:simulationTime", "ROS2PublishRawTransformTree1.inputs:timeStamp"),
-    #             ("IsaacReadSimulationTime.outputs:simulationTime", "ROS2PublishTransformTree.inputs:timeStamp"),
-    #             ("IsaacReadSimulationTime.outputs:simulationTime", "ROS2PublishTransformTreeSensorPack.inputs:timeStamp"),
-    #             ("IsaacComputeOdometry.outputs:execOut", "ROS2PublishOdometry.inputs:execIn"),
-    #             ("IsaacComputeOdometry.outputs:angularVelocity", "ROS2PublishOdometry.inputs:angularVelocity"),
-    #             ("IsaacComputeOdometry.outputs:linearVelocity", "ROS2PublishOdometry.inputs:linearVelocity"),
-    #             ("IsaacComputeOdometry.outputs:orientation", "ROS2PublishRawTransformTree.inputs:rotation"),
-    #             ("IsaacComputeOdometry.outputs:orientation", "ROS2PublishOdometry.inputs:orientation"),
-    #             ("IsaacComputeOdometry.outputs:position", "ROS2PublishRawTransformTree.inputs:translation"),
-    #             ("IsaacComputeOdometry.outputs:position", "ROS2PublishOdometry.inputs:position"),
-    #         ],
-    #         keys.SET_VALUES: [
-    #             ("ROS2Context.inputs:useDomainIDEnvVar",True),
-    #             ("IsaacComputeOdometry.inputs:chassisPrim",robotPrimPath+"/base_footprint"), ## this must be set to robot's articulation root
-    #             ("ROS2PublishOdometry.inputs:chassisFrameId", "base_link"),
-    #             ("ROS2PublishOdometry.inputs:odomFrameId", "odom"),
-    #             ("ROS2PublishOdometry.inputs:topicName", "odom"),
-    #             ("ROS2PublishRawTransformTree.inputs:childFrameId", "base_link"),
-    #             ("ROS2PublishRawTransformTree.inputs:parentFrameId", "odom"),
-    #             ("ROS2PublishRawTransformTree.inputs:topicName", "tf"),
-    #             ("ROS2PublishRawTransformTree1.inputs:childFrameId", "odom"),
-    #             ("ROS2PublishRawTransformTree1.inputs:parentFrameId", "world"),
-    #             ("ROS2PublishRawTransformTree1.inputs:topicName", "tf"),
-    #             ("ROS2PublishTransformTree.inputs:parentPrim", robotPrimPath + "/base_footprint/base_link"),
-    #             ("ROS2PublishTransformTree.inputs:targetPrims", [
-    #                 robotPrimPath + "/base_footprint",
-    #                 robotPrimPath + "/wheel_left_link",
-    #                 robotPrimPath + "/wheel_right_link",
-    #                 sensorPackPrimPath,
-    #                 ]),
-    #             ("ROS2PublishTransformTree.inputs:topicName", "tf"),
-    #             ("ROS2PublishTransformTreeSensorPack.inputs:parentPrim", sensorPackPrimPath),
-    #             ("ROS2PublishTransformTreeSensorPack.inputs:targetPrims", [
-    #                 sensorPackPrimPath + "/sensors_link",
-    #                 sensorPackPrimPath + "/sensors_link/camera_link",
-    #                 sensorPackPrimPath + "/sensors_link/imu_link",
-    #                 sensorPackPrimPath + "/sensors_link/lidar_link",
-    #                 ]),
-    #             ("ROS2PublishTransformTreeSensorPack.inputs:topicName", "tf"),
-    #         ],
-    #     },
-    # )
 
 # Run the ROS Camera graph once to generate ROS image publishers in SDGPipeline
 if defines.ENABLE_SENSORS["Camera"]: og.Controller.evaluate_sync(ros_camera_graph)
@@ -566,38 +495,85 @@ if defines.ENABLE_SENSORS["Camera"] and defines.ENABLE_SENSORS["Camera2"]:
 # simulation_context.initialize_physics()
 my_world.stop()
 
-# Lidar
+
 if defines.ENABLE_SENSORS["Lidar"]:
-    _, lidar_prim = omni.kit.commands.execute(
-        "IsaacSensorCreateRtxLidar",
-        path=sensorPackPrimPath + defines.LIDAR_PREFIX_PATH + "/Lidar",
-        parent=None,
-        config=defines.LIDAR_MODEL,
-        # translation=(-0.03, 0, 0.18), # this for 1x scale
-        translation=(-0.07, 0, 0.4), # this for 2x scale
-        # translation=(-0.1, 0, 0.57), # this for 3x scale
-        orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),  # Gf.Quatd is w,i,j,k
-    )
-    # RTX sensors are cameras and must be assigned to their own render product
-    lidar_render_product = rep.create.render_product(lidar_prim.GetPath(), [1, 1], name="Isaac")
-    # Create Point cloud publisher pipeline in the post process graph
-    writer = rep.writers.get("RtxLidar" + "ROS2PublishPointCloud")
-    writer.initialize(topicName="point_cloud", frameId="lidar_link")
-    writer.attach([lidar_render_product])
+    if env == "Rivermark":
+        lidar_offset = (-0.03, 0, 0.21)
+    else:
+        lidar_offset = (-0.07, 0, 0.4)
 
-    if defines.ENABLE_SENSORS["DebugLidar"]:
-        # Create the debug draw pipeline in the post process graph
-        writer1 = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
-        writer1.attach([lidar_render_product])
+    if defines.LIDAR_MODEL == "Livox_MID360":
+        lidar_prims=[]
+        lidar_render_products = []
+        writers = []
+        num_livox_parts = 5
+        lidar_steps = [11,12,13,14,15]
 
-lidar_gate_path = "/Render/PostProcess/SDGPipeline/Isaac_PostProcessDispatchIsaacSimulationGate"
-lidar_step_size = 3
-og.Controller.attribute(lidar_gate_path+".inputs:step").set(lidar_step_size)
+        # Create parts of MID360
+        for _ in range(num_livox_parts):
+            _, lidar_prim = omni.kit.commands.execute(
+                "IsaacSensorCreateRtxLidar",
+                path=sensorPackPrimPath + defines.LIDAR_PREFIX_PATH + "/Lidar1",
+                parent=None,
+                config="MID360_" + str(_+1),
+                # translation=(-0.03, 0, 0.18), # this for 1x scale
+                translation=lidar_offset, # this for 2x scale
+                # translation=(-0.1, 0, 0.57), # this for 3x scale
+                orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),  # Gf.Quatd is w,i,j,k
+            )
+            lidar_prims.append(lidar_prim)
 
+            # RTX sensors are cameras and must be assigned to their own render product
+            lidar_render_product = rep.create.render_product(lidar_prim.GetPath(), [1, 1], name="Isaac")
+            lidar_render_products.append(lidar_render_product)
 
+            # Create Point cloud publisher pipeline in the post process graph
+            writer = rep.writers.get("RtxLidar" + "ROS2PublishPointCloud")
+            writer.initialize(topicName="point_cloud", frameId="lidar_link")
+            writer.attach([lidar_render_product])
+            writers.append(writer)
+            if defines.ENABLE_SENSORS["DebugLidar"]:
+                # Create the debug draw pipeline in the post process graph
+                writerd = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
+                writerd.attach([lidar_render_product])
+                writers.append(writerd)
 
+        lidar_gate_paths = [
+            "/Render/PostProcess/SDGPipeline/Isaac_PostProcessDispatchIsaacSimulationGate",
+            "/Render/PostProcess/SDGPipeline/Isaac_01_PostProcessDispatchIsaacSimulationGate",
+            "/Render/PostProcess/SDGPipeline/Isaac_02_PostProcessDispatchIsaacSimulationGate",
+            "/Render/PostProcess/SDGPipeline/Isaac_03_PostProcessDispatchIsaacSimulationGate",
+            "/Render/PostProcess/SDGPipeline/Isaac_04_PostProcessDispatchIsaacSimulationGate"
+            ]
+        for path,step in zip(lidar_gate_paths,lidar_steps):
+            og.Controller.attribute(path+".inputs:step").set(step)
+            
 
-## Change Settings
+    else:
+        _, lidar_prim = omni.kit.commands.execute(
+            "IsaacSensorCreateRtxLidar",
+            path=sensorPackPrimPath + defines.LIDAR_PREFIX_PATH + "/Lidar",
+            parent=None,
+            config=defines.LIDAR_MODEL,
+            translation=lidar_offset,
+            orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),  # Gf.Quatd is w,i,j,k
+        )
+        # RTX sensors are cameras and must be assigned to their own render product
+        lidar_render_product = rep.create.render_product(lidar_prim.GetPath(), [1, 1], name="Isaac")
+        # Create Point cloud publisher pipeline in the post process graph
+        writer = rep.writers.get("RtxLidar" + "ROS2PublishPointCloud")
+        writer.initialize(topicName="point_cloud", frameId="lidar_link")
+        writer.attach([lidar_render_product])
+
+        if defines.ENABLE_SENSORS["DebugLidar"]:
+            # Create the debug draw pipeline in the post process graph
+            writer1 = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
+            writer1.attach([lidar_render_product])
+
+        lidar_gate_path = "/Render/PostProcess/SDGPipeline/Isaac_PostProcessDispatchIsaacSimulationGate"
+        lidar_step_size = 1
+        og.Controller.attribute(lidar_gate_path+".inputs:step").set(lidar_step_size)
+            # Change Settings
 import carb
 import carb.settings
 _settings = carb.settings.get_settings()
@@ -720,8 +696,45 @@ listener.start()
 tick = 0
 reset_needed = False
 velocity=[0.0,0.0]
-dv = 0.01
+dv = 0.02
 dr = np.pi/120.0
+
+from distance_calculator import DistanceCalculator
+distance_calculator = DistanceCalculator(robotPrimPath+"/base_footprint")
+
+# enabled_lidar = 0
+# frame = 0
+# def switch_lidar():
+#     global enabled_lidar
+#     if enabled_lidar==0:
+#         # lidar_render_product1.hydra_texture.set_updates_enabled(False)
+#         # lidar_render_product2.hydra_texture.set_updates_enabled(True)
+#         # lidar_render_product3.hydra_texture.set_updates_enabled(False)
+
+#         og.Controller.attribute(lidar1_gate_path+".inputs:step").set(10000)
+#         og.Controller.attribute(lidar2_gate_path+".inputs:step").set(1)
+#         og.Controller.attribute(lidar3_gate_path+".inputs:step").set(10000)
+#         og.Controller.attribute(lidar4_gate_path+".inputs:step").set(10000)
+#         enabled_lidar = 1
+#     elif enabled_lidar==1:
+#         og.Controller.attribute(lidar1_gate_path+".inputs:step").set(10000)
+#         og.Controller.attribute(lidar2_gate_path+".inputs:step").set(10000)
+#         og.Controller.attribute(lidar3_gate_path+".inputs:step").set(1)
+#         og.Controller.attribute(lidar4_gate_path+".inputs:step").set(10000)
+#         enabled_lidar = 2
+#     elif enabled_lidar==2:
+#         og.Controller.attribute(lidar1_gate_path+".inputs:step").set(10000)
+#         og.Controller.attribute(lidar2_gate_path+".inputs:step").set(10000)
+#         og.Controller.attribute(lidar3_gate_path+".inputs:step").set(10000)
+#         og.Controller.attribute(lidar4_gate_path+".inputs:step").set(1)
+#         enabled_lidar = 3
+#     else:
+#         og.Controller.attribute(lidar1_gate_path+".inputs:step").set(1)
+#         og.Controller.attribute(lidar2_gate_path+".inputs:step").set(10000)
+#         og.Controller.attribute(lidar3_gate_path+".inputs:step").set(10000)
+#         og.Controller.attribute(lidar4_gate_path+".inputs:step").set(10000)
+#         enabled_lidar = 0
+
 while app.is_running():
     if my_world.is_stopped() and not reset_needed:
         reset_needed = True
@@ -746,12 +759,19 @@ while app.is_running():
         while now > next_physics_time:
             my_world.step(render=False)
             next_physics_time += defines.PHYSICS_DT
+            total_distance = distance_calculator.update_distance()
 
         if now > next_render_time:
             my_world.render()
+            # frame+=1
+
+            # if defines.LIDAR_MODEL =="Livox_MID360" and frame %2 ==0: 
+            #     with IntervalChecker("switching lidars"):
+            #         switch_lidar()
             next_render_time += defines.RENDER_DT
+            print(f"Traveled distance: {total_distance:.3f} meters")
             if defines.ENABLE_SENSORS["TfOdom"]: ros_tf_odom_graph.evaluate()
-            # 키 입력에 따라 로봇 제어, 100hz시 키보드 컨트롤로 인한 지연 예방을 위해 30hz 루프에서 실행
+            
             if key_state['w']:
                 velocity[0]+=dv
                 robot.apply_wheel_actions(my_controller.forward(command=velocity))
