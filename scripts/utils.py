@@ -39,3 +39,4 @@ class PresetSelector(QMainWindow):
             self.env, self.robot = item.split(" + ")
         else:
             print('Canceled')
+
