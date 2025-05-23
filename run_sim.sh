@@ -37,4 +37,3 @@ cd $isaacsim_path
 #exec /home/do/isaacsim/python.sh /home/do/isaacsim/standalone_examples/api/isaacsim.ros2.bridge/carter_stereo.py
 $isaacsim_path/python.sh /home/do/Desktop/IsaacSIM-Robot-Simulation/scripts/dependecy_check.py
 $isaacsim_path/python.sh /home/do/Desktop/IsaacSIM-Robot-Simulation/scripts/robot_simulation.py
-
