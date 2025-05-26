@@ -1,25 +1,30 @@
-
-CAVE_USD_PATH = "/home/do/Desktop/IsaacSIM-Robot-Simulation/usd_scenes/Cave/cave_only.usd"
-OFFICE_USD_PATH = "/home/do/Desktop/IsaacSIM-Robot-Simulation/usd_scenes/Collected_office/office.usd"
-RIVERMARK_USD_PATH = "/home/do/Desktop/IsaacSIM-Robot-Simulation/usd_scenes/Outdoor/Rivermark/rivermark_simple_flattened.usd"
-GAMEREADY_CITY_USD_PATH = "/home/do/Desktop/IsaacSIM-Robot-Simulation/usd_scenes/Full_Gameready_City_Buildings/city_turtlebot_simplified.usd"
-NVIDIA_CITY_USD_PATH = "/home/do/Desktop/IsaacSIM-Robot-Simulation/usd_scenes/AECO_CityDemoPack_NVD@10011/Demos/AEC/TowerDemo/CityDemopack/World_CityDemopack_turtlebot.usd"
+## 0. Preset Selection
+USD_PATH = {
+    "Cave": "/home/do/Desktop/IsaacSIM-Robot-Simulation/usd_scenes/Cave/cave_only.usd",
+    "Office": "/home/do/Desktop/IsaacSIM-Robot-Simulation/usd_scenes/Collected_office/office.usd",
+    "Rivermark": "/home/do/Desktop/IsaacSIM-Robot-Simulation/usd_scenes/Outdoor/Rivermark/rivermark_simple_flattened.usd",
+    "GameReady City": "/home/do/Desktop/IsaacSIM-Robot-Simulation/usd_scenes/Full_Gameready_City_Buildings/city_turtlebot_simplified.usd",
+    "NVIDIA City": "/home/do/Desktop/IsaacSIM-Robot-Simulation/usd_scenes/AECO_CityDemoPack_NVD@10011/Demos/AEC/TowerDemo/CityDemopack/World_CityDemopack_turtlebot.usd"
+}
 SENSOR_PACK_URDF_PATH="/home/do/Desktop/IsaacSIM-Robot-Simulation/sensor_pack/sensor_pack.urdf"
 
-PHYSICS_DT = 1/100
-RENDER_DT = 1/30
-
-ENABLE_SENSORS = {
-    "Camera":True,
-    "Camera2":False, # first Camera must be set to True before using this
-    "Imu":True,
-    "Lidar":True,
-    "DebugLidar":False,
-    "TfOdom":True
+ROBOT_PRIM_PATH = {
+    "Cave": "/fuel/turtlebot3_burger",
+    "Office": "/World/turtlebot3_burger",
+    "Rivermark": "/World/turtlebot3_burger",
+    "GameReady City": "/scene/turtlebot3_burger",
+    "NVIDIA City": "/World/turtlebot3_burger"
 }
 
-ENABLE_REALTIME_SYNC = True  # If false, the simulator operates at maximum performance. Only turn on this option when simulator runs faster than desired Hz.
+ROBOT_POSITION = {
+    "Cave": [0.0, 0.0, 0.05],
+    "Office": [0.0, 0.0, 0.05],
+    "Rivermark": [0.0, 0.0, 5.9],
+    "GameReady City": [0.0, 0.0, 0.05],
+    "NVIDIA City": [-13.0, 0.0, 0.0]
+}
 
+## 1. App Initialization 
 DISP_FPS        = 1<<0
 DISP_AXIS       = 1<<1
 DISP_RESOLUTION = 1<<3
@@ -38,25 +43,6 @@ LAUNCH_CONFIG = {
     "window_height":1080,
     "display_options": DISP_FPS|DISP_RESOLUTION|DISP_MESH|DISP_DEV_MEM|DISP_HOST_MEM,
     }
-
-
-
-## prim path for sensors. 
-# Camera and Lidar : include instance path
-# IMU path : only parent path
-CAMERA_PREFIX_PATH = "/sensors_link/camera_link"
-IMU_PREFIX_PATH = "/sensors_link/imu_link"
-LIDAR_PREFIX_PATH = "/sensors_link/lidar_link"
-
-ROS_CAMERA_GRAPH_PATH = "/ROS_Camera"
-ROS_IMU_GRAPH_PATH = "/ROS_IMU"
-ROS_TF_ODOM_GRAPH_PATH = "/ROS_Tf_Odom"
-
-# LIDAR_MODEL = "OS0_REV6_128ch30hz1024res"
-# LIDAR_MODEL = "OS0_REV6_128ch30hz512res"
-# LIDAR_MODEL = "OS0_REV6_64ch30hz1024res"
-LIDAR_MODEL = "Livox_MID360"
-# LIDAR_MODEL = "Simple_Example_Solid_State"
 
 EXTENSIONS = [
     "omni.graph.window.core", # OmniGraph
@@ -78,3 +64,33 @@ EXTENSIONS = [
     "omni.kit.viewport.rtx",
     "omni.kit.profiler.window" # Profiler
 ]
+
+PHYSICS_DT = 1/100
+RENDER_DT = 1/30
+
+## 3. Sensor Configuration
+ENABLE_SENSORS = {
+    "Camera":True,
+    "Camera2":True, # first Camera must be set to True before using this
+    "Imu":True,
+    "Lidar":True,
+    "DebugLidar":False,
+    "TfOdom":True
+}
+
+ENABLE_REALTIME_SYNC = True  # If false, the simulator operates at maximum performance. Only turn on this option when simulator runs faster than desired Hz.
+
+CAMERA_PREFIX_PATH = "/sensors_link/camera_link"
+IMU_PREFIX_PATH = "/sensors_link/imu_link"
+LIDAR_PREFIX_PATH = "/sensors_link/lidar_link"
+
+ROS_CAMERA_GRAPH_PATH = "/ROS_Camera"
+ROS_IMU_GRAPH_PATH = "/ROS_IMU"
+ROS_TF_ODOM_GRAPH_PATH = "/ROS_Tf_Odom"
+
+# LIDAR_MODEL = "OS0_REV6_128ch30hz1024res"
+# LIDAR_MODEL = "OS0_REV6_128ch30hz512res"
+# LIDAR_MODEL = "OS0_REV6_64ch30hz1024res"
+LIDAR_MODEL = "Livox_MID360"
+# LIDAR_MODEL = "Simple_Example_Solid_State"
+

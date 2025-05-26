@@ -5,21 +5,20 @@
 #############################################
 import defines
 import os
-from time import sleep,perf_counter
-from utils import PresetSelector, IntervalChecker
+from time import sleep, perf_counter
+from preset_selector import PresetSelector
 from PyQt5.QtWidgets import QApplication
 import sys
 import numpy as np
 
-
-sleep(2) # waiting for RVIZ loading first
+sleep(2) # waiting for RVIZ startup
 app = QApplication(sys.argv)
 lstPreset = [
     "Cave + turtlebot3_burger",
     "Office + turtlebot3_burger",
     "Rivermark + turtlebot3_burger",
     "GameReady City + turtlebot3_burger",
-    "NVIDIA_City + turtlebot3_burger",
+    "NVIDIA City + turtlebot3_burger",
     "Custom + Custom"]
 preset_selector = PresetSelector(lstPreset)
 env,robot = preset_selector.env, preset_selector.robot
@@ -27,39 +26,14 @@ env,robot = preset_selector.env, preset_selector.robot
 if env==None or robot==None:
     os.system("pgrep -f rviz | xargs -r kill -15")
     exit()
-elif env=="Cave" and robot =="turtlebot3_burger":
-    usdPath=defines.CAVE_USD_PATH
-    robotPrimPath = "/fuel/turtlebot3_burger"
-    robotPosition = np.array([0, 0.0, 0.05])
-    sensorPackPrimPath = robotPrimPath + "/base_footprint/base_link/sensor_pack"
-elif env=="Office" and robot =="turtlebot3_burger":
-    usdPath=defines.OFFICE_USD_PATH
-    robotPrimPath = "/World/turtlebot3_burger"
-    robotPosition = np.array([0, 0.0, 0.05])
-    sensorPackPrimPath = robotPrimPath + "/base_footprint/base_link/sensor_pack"
-elif env=="Rivermark" and robot =="turtlebot3_burger":
-    usdPath=defines.RIVERMARK_USD_PATH
-    robotPrimPath = "/World/turtlebot3_burger"
-    robotPosition = np.array([0, 0.0, 5.9])
-    sensorPackPrimPath = robotPrimPath + "/base_footprint/base_link/sensor_pack"
-elif env=="GameReady City" and robot =="turtlebot3_burger":
-    usdPath=defines.GAMEREADY_CITY_USD_PATH
-    robotPrimPath = "/scene/turtlebot3_burger"
-    robotPosition = np.array([0, 0.0, 0.05])
-    sensorPackPrimPath = robotPrimPath + "/base_footprint/base_link/sensor_pack"
-elif env=="NVIDIA_City" and robot =="turtlebot3_burger":
-    usdPath=defines.NVIDIA_CITY_USD_PATH
-    robotPrimPath = "/World/turtlebot3_burger"
-    robotPosition = np.array([-13, 0.0, 0.0])
+
+usdPath = defines.USD_PATH[env]
+if robot == "turtlebot3_burger":
+    robotPrimPath = defines.ROBOT_PRIM_PATH[env]
+    robotPosition = np.array(defines.ROBOT_POSITION[env])
     sensorPackPrimPath = robotPrimPath + "/base_footprint/base_link/sensor_pack"
 else:
-    ## Uncomment below lines and modify it
-    # usdPath="path to your usd file"
-    # robotPrimPath = "prim path of your robot"
-    # sensorPackPrimPath = robotPrimPath + "/base_footprint/base_link/sensor_pack"
-
-    ## Remove below lines
-    print("Not Imeplemented.")
+    print("Not Implemented.")
     os.system("pgrep -f rviz | xargs -r kill -15")
     exit()
 
@@ -88,7 +62,7 @@ from isaacsim.core.utils.extensions import enable_extension
 from isaacsim.core.utils.stage import open_stage
 from isaacsim.core.api import SimulationContext
 import omni.replicator.core as rep
-
+from sim_utils import DistanceCalculator, IntervalChecker
 
 # Load Extensions
 print_log("\n\n     Loading Extensions...\n")
@@ -154,7 +128,7 @@ if is_prim_path_valid(robotPrimPath):
     )
     my_world.scene.add(robot)
 else:
-    print(f"[INFO] No robot found at {robotPrimPath}, creating new robot.")
+    print(f"[INFO] Could not find robot at {robotPrimPath}, creating a new robot.")
     robot = my_world.scene.add(
     WheeledRobot(
         prim_path=robotPrimPath,
@@ -571,7 +545,7 @@ if defines.ENABLE_SENSORS["Lidar"]:
             writer1.attach([lidar_render_product])
 
         lidar_gate_path = "/Render/PostProcess/SDGPipeline/Isaac_PostProcessDispatchIsaacSimulationGate"
-        lidar_step_size = 1
+        lidar_step_size = 3
         og.Controller.attribute(lidar_gate_path+".inputs:step").set(lidar_step_size)
             # Change Settings
 import carb
@@ -640,14 +614,7 @@ omni.kit.commands.execute('ChangeProperty',
 	usd_context_name=stage)
 
 
-
-
-
-
-
 print_log("\n\n     Simulator Ready!\n")
-
-
 
 
 #############################################
@@ -699,41 +666,8 @@ velocity=[0.0,0.0]
 dv = 0.02
 dr = np.pi/120.0
 
-from distance_calculator import DistanceCalculator
+
 distance_calculator = DistanceCalculator(robotPrimPath+"/base_footprint")
-
-# enabled_lidar = 0
-# frame = 0
-# def switch_lidar():
-#     global enabled_lidar
-#     if enabled_lidar==0:
-#         # lidar_render_product1.hydra_texture.set_updates_enabled(False)
-#         # lidar_render_product2.hydra_texture.set_updates_enabled(True)
-#         # lidar_render_product3.hydra_texture.set_updates_enabled(False)
-
-#         og.Controller.attribute(lidar1_gate_path+".inputs:step").set(10000)
-#         og.Controller.attribute(lidar2_gate_path+".inputs:step").set(1)
-#         og.Controller.attribute(lidar3_gate_path+".inputs:step").set(10000)
-#         og.Controller.attribute(lidar4_gate_path+".inputs:step").set(10000)
-#         enabled_lidar = 1
-#     elif enabled_lidar==1:
-#         og.Controller.attribute(lidar1_gate_path+".inputs:step").set(10000)
-#         og.Controller.attribute(lidar2_gate_path+".inputs:step").set(10000)
-#         og.Controller.attribute(lidar3_gate_path+".inputs:step").set(1)
-#         og.Controller.attribute(lidar4_gate_path+".inputs:step").set(10000)
-#         enabled_lidar = 2
-#     elif enabled_lidar==2:
-#         og.Controller.attribute(lidar1_gate_path+".inputs:step").set(10000)
-#         og.Controller.attribute(lidar2_gate_path+".inputs:step").set(10000)
-#         og.Controller.attribute(lidar3_gate_path+".inputs:step").set(10000)
-#         og.Controller.attribute(lidar4_gate_path+".inputs:step").set(1)
-#         enabled_lidar = 3
-#     else:
-#         og.Controller.attribute(lidar1_gate_path+".inputs:step").set(1)
-#         og.Controller.attribute(lidar2_gate_path+".inputs:step").set(10000)
-#         og.Controller.attribute(lidar3_gate_path+".inputs:step").set(10000)
-#         og.Controller.attribute(lidar4_gate_path+".inputs:step").set(10000)
-#         enabled_lidar = 0
 
 while app.is_running():
     if my_world.is_stopped() and not reset_needed:
@@ -763,11 +697,6 @@ while app.is_running():
 
         if now > next_render_time:
             my_world.render()
-            # frame+=1
-
-            # if defines.LIDAR_MODEL =="Livox_MID360" and frame %2 ==0: 
-            #     with IntervalChecker("switching lidars"):
-            #         switch_lidar()
             next_render_time += defines.RENDER_DT
             print(f"Traveled distance: {total_distance:.3f} meters")
             if defines.ENABLE_SENSORS["TfOdom"]: ros_tf_odom_graph.evaluate()

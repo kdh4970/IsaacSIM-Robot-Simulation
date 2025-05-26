@@ -1,5 +1,21 @@
+from time import perf_counter
 import omni
 import numpy as np
+
+class IntervalChecker:
+    def __init__(self, text= None):
+        self.text = text
+        self.elapsed = None
+
+    def __enter__(self):
+        self.start = perf_counter()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        end = perf_counter()
+        self.elapsed = end - self.start
+        if self.text:print(f"During {self.text} : {1000 * self.elapsed:.3f}ms")
+
 
 class DistanceCalculator:
     def __init__(self, robot_prim_path):
