@@ -30,25 +30,29 @@ This project was conducted on below environments.
 
 ## How to run  
 
-### 0. Before run.  
+### 0. Before Run.  
 
 Install IsaacSIM 4.5.0 and ROS2.  
 
-### 1. Clone this repo  
+### 1. Clone this Repo  
 ```
 git clone https://github.com/kdh4970/IsaacSIM-Robot-Simulation.git
 ```
 
-### 2. Edit script  
+### 2. Edit Script  
 Change below things in run_sim.sh file.  
  - If isaacsim path is not "~/isaacsim", change it manually.  
  - Check your ROS path.  
  - If You dont use zsh, change "setup.zsh" to your shell.  
 
-### 3. Unzip scenes  
+### 3. Unzip Scenes  
 Unzip scene datas in usd_scenes directory.  
 
-### 4. Start Simulation  
+### 4. Lidar Configs  
+Move "lidar_configs" directory to "isaacsim/exts/isaacsim.sensors.rtx/data/lidar_configs"
+Replace "extension.toml" to "isaacsim/exts/isaacsim.sensors.rtx/config/extension.toml"
+
+### 5. Start Simulation  
 
 ```
 cd IsaacSIM-Robot-Simulation
