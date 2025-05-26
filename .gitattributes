@@ -1,5 +1,6 @@
 *.tar.xz filter=lfs diff=lfs merge=lfs -text
 usd_scenes/AECO_CityDemoPack_NVD@10011.tar.xz filter=lfs diff=lfs merge=lfs -text
 usd_scenes/Full_Gameready_City_Buildings.tar.xz filter=lfs diff=lfs merge=lfs -text
+Cave.tar.xz filter=lfs diff=lfs merge=lfs -text
 usd_scenes/Collected_office.tar.xz filter=lfs diff=lfs merge=lfs -text
 usd_scenes/Cave.tar.xz filter=lfs diff=lfs merge=lfs -text
