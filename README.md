@@ -54,3 +54,12 @@ Unzip scene datas in usd_scenes directory.
 cd IsaacSIM-Robot-Simulation
 ./run-sim.sh
 ```
+
+## Demo
+
+
+https://github.com/user-attachments/assets/1bf2f319-edc1-41eb-a132-e0f983242f7a
+
+
+
+
