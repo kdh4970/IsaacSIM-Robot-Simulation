@@ -34,17 +34,21 @@ This project was conducted on below environments.
 
 Install IsaacSIM 4.5.0 and ROS2.  
 
-### 1. Clone this repo.  
+### 1. Clone this repo  
 ```
 git clone https://github.com/kdh4970/IsaacSIM-Robot-Simulation.git
 ```
 
+### 2. Edit script  
 Change below things in run_sim.sh file.  
  - If isaacsim path is not "~/isaacsim", change it manually.  
  - Check your ROS path.  
  - If You dont use zsh, change "setup.zsh" to your shell.  
 
-### 1. Start Simulation
+### 3. Unzip scenes  
+Unzip scene datas in usd_scenes directory.  
+
+### 4. Start Simulation  
 
 ```
 cd IsaacSIM-Robot-Simulation
