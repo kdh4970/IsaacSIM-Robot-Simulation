@@ -4,12 +4,12 @@
 
 Navigation and Sensor Data Logging of a Mobile Robot in an Isaac Sim-Based Virtual Environment.  
 
-Robot : 
+Robots : 
  * UGV : turtlebot3_burger  
  * UAV : Not implemented  
  * Humanoid : Unitree G1 (Implementing)
 
-Sensors and rate :   
+Sensors and rates :   
  * Camera : 30 Hz RGBD  
  * IMU : 100 Hz  
  * Lidar : 10Hz Ouster and Livox  
@@ -49,8 +49,8 @@ Change below things in run_sim.sh file.
 Unzip scene datas in usd_scenes directory.  
 
 ### 4. Lidar Configs  
-Move "lidar_configs" directory to "isaacsim/exts/isaacsim.sensors.rtx/data/lidar_configs"
-Replace "extension.toml" to "isaacsim/exts/isaacsim.sensors.rtx/config/extension.toml"
+Move "lidar_configs" directory to "isaacsim/exts/isaacsim.sensors.rtx/data/lidar_configs".  
+Replace "extension.toml" to "isaacsim/exts/isaacsim.sensors.rtx/config/extension.toml".  
 
 ### 5. Start Simulation  
 
