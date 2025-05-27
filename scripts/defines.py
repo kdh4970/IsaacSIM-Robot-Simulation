@@ -92,5 +92,4 @@ LIDAR_MODEL = "OS0_REV6_128ch30hz1024res"
 # LIDAR_MODEL = "OS0_REV6_128ch30hz512res"
 # LIDAR_MODEL = "OS0_REV6_64ch30hz1024res"
 # LIDAR_MODEL = "Livox_MID360"
-# LIDAR_MODEL = "Simple_Example_Solid_State"
 
