@@ -52,6 +52,8 @@ Unzip scene datas in usd_scenes directory.
 Move "lidar_configs" directory to "isaacsim/exts/isaacsim.sensors.rtx/data/lidar_configs".  
 Replace "extension.toml" to "isaacsim/exts/isaacsim.sensors.rtx/config/extension.toml".  
 
+You can select your lidar model *LIDAR_MODEL* in the end of "defines.py".
+
 ### 5. Start Simulation  
 
 ```
