@@ -71,7 +71,7 @@ RENDER_DT = 1/30
 ## 3. Sensor Configuration
 ENABLE_SENSORS = {
     "Camera":True,
-    "Camera2":True, # first Camera must be set to True before using this
+    "Camera2":False, # first Camera must be set to True before using this
     "Imu":True,
     "Lidar":True,
     "DebugLidar":False,
@@ -88,8 +88,8 @@ ROS_CAMERA_GRAPH_PATH = "/ROS_Camera"
 ROS_IMU_GRAPH_PATH = "/ROS_IMU"
 ROS_TF_ODOM_GRAPH_PATH = "/ROS_Tf_Odom"
 
-LIDAR_MODEL = "OS0_REV6_128ch30hz1024res"
+# LIDAR_MODEL = "OS0_REV6_128ch30hz1024res"
 # LIDAR_MODEL = "OS0_REV6_128ch30hz512res"
 # LIDAR_MODEL = "OS0_REV6_64ch30hz1024res"
+LIDAR_MODEL = "OS0_REV6_32ch30hz1024res"
 # LIDAR_MODEL = "Livox_MID360"
-

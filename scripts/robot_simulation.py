@@ -16,6 +16,7 @@ app = QApplication(sys.argv)
 lstPreset = [
     "Cave + turtlebot3_burger",
     "Office + turtlebot3_burger",
+    "Office + unitree_g1"
     "Rivermark + turtlebot3_burger",
     "GameReady City + turtlebot3_burger",
     "NVIDIA City + turtlebot3_burger",
@@ -106,44 +107,49 @@ my_world = World(stage_units_in_meters=1.0,physics_dt=defines.PHYSICS_DT,renderi
 app.update()
 
 
-
-
 ## Robot
 
 print_log("Creating robot...")
-from isaacsim.robot.wheeled_robots.robots import WheeledRobot
-from isaacsim.robot.wheeled_robots.controllers.differential_controller import DifferentialController
-from isaacsim.storage.native import get_assets_root_path
-from isaacsim.core.utils.prims import is_prim_path_valid
+if robot == "turtlebot3_burger":
+    from isaacsim.robot.wheeled_robots.robots import WheeledRobot
+    from isaacsim.robot.wheeled_robots.controllers.differential_controller import DifferentialController
+    from isaacsim.storage.native import get_assets_root_path
+    from isaacsim.core.utils.prims import is_prim_path_valid
 
-asset_path = get_assets_root_path() + "/Isaac/Robots/Turtlebot/turtlebot3_burger.usd"
-my_world = World(stage_units_in_meters=1.0)
-if is_prim_path_valid(robotPrimPath):
-    print(f"[INFO] Existing robot found at {robotPrimPath}, reusing it.")
-    robot = WheeledRobot(
-        prim_path=robotPrimPath,
-        name="turtlebot3_burger",
-        wheel_dof_names=["wheel_left_joint", "wheel_right_joint"],
-        create_robot=False  # 이미 있으므로 생성하지 않음
-    )
-    my_world.scene.add(robot)
-else:
-    print(f"[INFO] Could not find robot at {robotPrimPath}, creating a new robot.")
-    robot = my_world.scene.add(
-    WheeledRobot(
-        prim_path=robotPrimPath,
-        name="turtlebot3_burger",
-        wheel_dof_names=["wheel_left_joint", "wheel_right_joint"],
-        create_robot=True,
-        usd_path=asset_path,
-        position=robotPosition,
+    asset_path = get_assets_root_path() + "/Isaac/Robots/Turtlebot/turtlebot3_burger.usd"
+    my_world = World(stage_units_in_meters=1.0)
+    if is_prim_path_valid(robotPrimPath):
+        print(f"[INFO] Existing robot found at {robotPrimPath}, reusing it.")
+        robot = WheeledRobot(
+            prim_path=robotPrimPath,
+            name="turtlebot3_burger",
+            wheel_dof_names=["wheel_left_joint", "wheel_right_joint"],
+            create_robot=False  # 이미 있으므로 생성하지 않음
         )
-    )
-if env == "Rivermark":
-    my_controller = DifferentialController(name="simple_control", wheel_radius=0.25, wheel_base=1.6,max_linear_speed=2.0,max_angular_speed=1.0)
-else:
-    my_controller = DifferentialController(name="simple_control", wheel_radius=0.025, wheel_base=0.16,max_linear_speed=1.5,max_angular_speed=1.0)
+        my_world.scene.add(robot)
+    else:
+        print(f"[INFO] Could not find robot at {robotPrimPath}, creating a new robot.")
+        robot = my_world.scene.add(
+        WheeledRobot(
+            prim_path=robotPrimPath,
+            name="turtlebot3_burger",
+            wheel_dof_names=["wheel_left_joint", "wheel_right_joint"],
+            create_robot=True,
+            usd_path=asset_path,
+            position=robotPosition,
+            )
+        )
+    if env == "Rivermark":
+        my_controller = DifferentialController(name="simple_control", wheel_radius=0.25, wheel_base=1.6,max_linear_speed=2.0,max_angular_speed=1.0)
+    else:
+        my_controller = DifferentialController(name="simple_control", wheel_radius=0.025, wheel_base=0.16,max_linear_speed=1.5,max_angular_speed=1.0)
+elif robot == "unitree_g1":
+    _base_command = [0, 0, 0]
+    _g1 = None
 
+    def on_physics_step(step_size):
+        if _g1:
+            _g1.forward(step_size, _base_command)
 
 ## Sensor Pack
 print_log(f"\n\n     Searching sensor_pack...\n")
@@ -628,16 +634,17 @@ my_controller.reset()
 
 import numpy as np
 
-print("Control Instructions:")
-print("  W: Move Forward")
-print("  A: Rotate Left")
-print("  D: Rotate Right")
-print("  S: Stop")
+print("[ Control Instructions ]")
+print(" ↑ : Increase linear velocity")
+print(" ↓ : Decrease linear velocity")
+print(" ← : Rotate Left")
+print(" → : Rotate Right")
+print(" S : Stop")
 
 
 ## Setup Keyboard
 velocity=[0.0,0.0] # lin_vel,ang_vel
-dv = 0.1
+dv = 0.05
 dr = np.pi/36.0
 
 _key_to_control = {
@@ -649,18 +656,21 @@ _key_to_control = {
 
 _input = carb.input.acquire_input_interface()
 _keyboard = omni.appwindow.get_default_app_window().get_keyboard()
-
+need_update_vel = True
 def _on_keyboard_event(event):
-    global velocity
+    global velocity, need_update_vel
     """Checks for a keyboard event and assign the corresponding command control depending on key pressed."""
-    if event.type == carb.input.KeyboardEventType.KEY_PRESS:
+    if event.type in [carb.input.KeyboardEventType.KEY_PRESS, carb.input.KeyboardEventType.KEY_REPEAT]:
         # Arrow keys map to pre-defined command vectors to control navigation of robot
         if event.input.name in _key_to_control:
             velocity[0] += _key_to_control[event.input.name][0]
             velocity[1] += _key_to_control[event.input.name][1]
-            print(f"Keybord : {event.input.name} >> Set Velocity : {velocity}")
-        elif event.input.name == "ZEROS":
+            print(f"  Keybord : {event.input.name} >> Set Velocity : {velocity}")
+            need_update_vel = True
+        elif event.input.name == "S":
             velocity = [0.0,0.0]
+            print(f"  Keybord : {event.input.name} >> Set Velocity : {velocity}")
+            need_update_vel = True
 
 """Sets up interface for keyboard input and registers the desired keys for control."""
 _input = carb.input.acquire_input_interface()
@@ -670,7 +680,7 @@ _sub_keyboard = _input.subscribe_to_keyboard_events(_keyboard, _on_keyboard_even
 # 메인 루프
 tick = 0
 reset_needed = False
-
+need_update_vel = False
 
 
 distance_calculator = DistanceCalculator(robotPrimPath+"/base_footprint")
@@ -703,7 +713,7 @@ while app.is_running():
         if now > next_render_time:
             my_world.render()
             next_render_time += defines.RENDER_DT
-            print(f"Traveled distance: {total_distance:.3f} meters")
+            print(f" Traveled distance: {total_distance:.3f} meters",end = "\r")
             if defines.ENABLE_SENSORS["TfOdom"]: ros_tf_odom_graph.evaluate()
             
         robot.apply_wheel_actions(my_controller.forward(command=velocity))
@@ -721,13 +731,16 @@ while app.is_running():
 
 
         my_world.step(render=False)
-
+        total_distance = distance_calculator.update_distance()
+        
         if tick % 3==2:
             my_world.render()
-
+            print(f" Traveled distance: {total_distance:.3f} meters",end = "\r")
             if defines.ENABLE_SENSORS["TfOdom"]: ros_tf_odom_graph.evaluate()
-
-        robot.apply_wheel_actions(my_controller.forward(command=velocity))
+            
+        if need_update_vel:
+            need_update_vel = False
+            robot.apply_wheel_actions(my_controller.forward(command=velocity))
 
         tick += 1
         if tick > 1e8:
