@@ -1,0 +1,3 @@
+[submodule "scripts/isaacsim_g1_locomotion"]
+	path = scripts/isaacsim_g1_locomotion
+	url = https://github.com/kdh4970/isaacsim_g1_locomotion.git
