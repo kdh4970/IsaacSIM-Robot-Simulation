@@ -4,15 +4,14 @@
 
 Navigation and Sensor Data Logging of a Mobile Robot in an Isaac Sim-Based Virtual Environment.  
 
+1. You can control the robot by using keyboard "UP", "DOWN", "LEFT", "RIGHT".  
+2. Sensor data of enabled sensors will be published into ROS2 topic automatically.  
+
+
 Robots : 
  * UGV : turtlebot3_burger  
  * UAV : Not implemented  
  * Humanoid : Unitree G1 (Implementing)
-
-Sensors and rates :   
- * Camera : 30 Hz RGBD  
- * IMU : 100 Hz  
- * Lidar : 10Hz Ouster and Livox  
 
 Scenes :
  * Cave : Subterranean cave  
@@ -21,12 +20,24 @@ Scenes :
  * Gameready City : Small scale city
  * NVIDIA City : Large scale city
 
+Simulation :  
+ * Physics rate : 100 Hz  
+ * Render rate : 30 Hz  
+ * This is default preset. You can change it by changing defines.PHYSICS_DT and defines.RENDER_DT.  
+ * If you set defines.ENABLE_REALTIME_SYNC to False, Simulation will be perfomed with best performance.
+
+Sensors and rates :   
+ * Camera : 30 Hz RGBD  (depend on Render)
+ * IMU : 100 Hz (depend on Physics)
+ * Lidar : 10Hz Ouster and Livox  (depend on Render, downsampled)
+
 ## Dependencies  
 
 This project was conducted on below environments.  
  * Ubuntu 20.04  
  * IsaacSim 4.5.0  
  * ROS2 Humble  
+ * NVIDIA GeForce RTX 3080 Ti x2  
 
 ## How to run  
 

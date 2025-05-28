@@ -625,7 +625,7 @@ print_log("\n\n     Simulator Ready!\n")
 my_world.reset()
 my_world.stop()
 my_controller.reset()
-from pynput import keyboard as pynkeyboard
+
 import numpy as np
 
 print("Control Instructions:")
@@ -634,37 +634,43 @@ print("  A: Rotate Left")
 print("  D: Rotate Right")
 print("  S: Stop")
 
-# 키 상태 저장용 딕셔너리
-key_state = {'w': False, 'a': False, 's': False, 'd': False, 'x': False, 'q': False}
 
-# 키 눌렀을 때
-def on_press(key):
-    try:
-        k = key.char.lower()
-        if k in key_state:
-            key_state[k] = True
-    except AttributeError:
-        pass  # special keys 무시
+## Setup Keyboard
+velocity=[0.0,0.0] # lin_vel,ang_vel
+dv = 0.1
+dr = np.pi/36.0
 
-# 키 뗐을 때
-def on_release(key):
-    try:
-        k = key.char.lower()
-        if k in key_state:
-            key_state[k] = False
-    except AttributeError:
-        pass
+_key_to_control = {
+    "UP"   : [dv,  0.0],
+    "DOWN" : [-dv, 0.0],
+    "LEFT" : [0.0, dr],
+    "RIGHT": [0.0, -dr],
+}
 
-# 비동기 리스너 시작
-listener = pynkeyboard.Listener(on_press=on_press, on_release=on_release)
-listener.start()
+_input = carb.input.acquire_input_interface()
+_keyboard = omni.appwindow.get_default_app_window().get_keyboard()
+
+def _on_keyboard_event(event):
+    global velocity
+    """Checks for a keyboard event and assign the corresponding command control depending on key pressed."""
+    if event.type == carb.input.KeyboardEventType.KEY_PRESS:
+        # Arrow keys map to pre-defined command vectors to control navigation of robot
+        if event.input.name in _key_to_control:
+            velocity[0] += _key_to_control[event.input.name][0]
+            velocity[1] += _key_to_control[event.input.name][1]
+            print(f"Keybord : {event.input.name} >> Set Velocity : {velocity}")
+        elif event.input.name == "ZEROS":
+            velocity = [0.0,0.0]
+
+"""Sets up interface for keyboard input and registers the desired keys for control."""
+_input = carb.input.acquire_input_interface()
+_keyboard = omni.appwindow.get_default_app_window().get_keyboard()
+_sub_keyboard = _input.subscribe_to_keyboard_events(_keyboard, _on_keyboard_event)
 
 # 메인 루프
 tick = 0
 reset_needed = False
-velocity=[0.0,0.0]
-dv = 0.02
-dr = np.pi/120.0
+
 
 
 distance_calculator = DistanceCalculator(robotPrimPath+"/base_footprint")
@@ -674,8 +680,7 @@ while app.is_running():
         reset_needed = True
 
     app.update()
-    if tick != 0:
-        tick = 0
+    if tick != 0: tick = 0
 
     ## Real-time Syncronous Simulation
     while my_world.is_playing() and defines.ENABLE_REALTIME_SYNC:
@@ -701,30 +706,7 @@ while app.is_running():
             print(f"Traveled distance: {total_distance:.3f} meters")
             if defines.ENABLE_SENSORS["TfOdom"]: ros_tf_odom_graph.evaluate()
             
-            if key_state['w']:
-                velocity[0]+=dv
-                robot.apply_wheel_actions(my_controller.forward(command=velocity))
-                print("Forward:", robot.get_linear_velocity())
-            elif key_state['a']:
-                velocity[1]+=dr
-                robot.apply_wheel_actions(my_controller.forward(command=velocity))
-                print("Rotate Left:", robot.get_angular_velocity())
-            elif key_state['d']:
-                velocity[1]-=dr
-                robot.apply_wheel_actions(my_controller.forward(command=velocity))
-                print("Rotate Right:", robot.get_angular_velocity())
-            elif key_state['s']:
-                velocity[0] = 0.0
-                velocity[1] = 0.0
-                robot.apply_wheel_actions(my_controller.forward(command=velocity))
-                print("Stop")
-            elif key_state['x']:
-                velocity[0]-=dv
-                robot.apply_wheel_actions(my_controller.forward(command=velocity))
-                print("Backward:", robot.get_linear_velocity())
-            elif key_state['q']:
-                my_world.stop()
-                break
+        robot.apply_wheel_actions(my_controller.forward(command=velocity))
 
         tick += 1
         if tick > 1e8:
@@ -745,31 +727,7 @@ while app.is_running():
 
             if defines.ENABLE_SENSORS["TfOdom"]: ros_tf_odom_graph.evaluate()
 
-            # 키 입력에 따라 로봇 제어, 100hz시 키보드 컨트롤로 인한 지연 예방을 위해 30hz 루프에서 실행
-            if key_state['w']:
-                velocity[0]+=dv
-                robot.apply_wheel_actions(my_controller.forward(command=velocity))
-                print("Forward:", robot.get_linear_velocity())
-            elif key_state['a']:
-                velocity[1]+=dr
-                robot.apply_wheel_actions(my_controller.forward(command=velocity))
-                print("Rotate Left:", robot.get_angular_velocity())
-            elif key_state['d']:
-                velocity[1]-=dr
-                robot.apply_wheel_actions(my_controller.forward(command=velocity))
-                print("Rotate Right:", robot.get_angular_velocity())
-            elif key_state['s']:
-                velocity[0] = 0.0
-                velocity[1] = 0.0
-                robot.apply_wheel_actions(my_controller.forward(command=velocity))
-                print("Stop")
-            elif key_state['x']:
-                velocity[0]-=dv
-                robot.apply_wheel_actions(my_controller.forward(command=velocity))
-                print("Backward:", robot.get_linear_velocity())
-            elif key_state['q']:
-                my_world.stop()
-                break
+        robot.apply_wheel_actions(my_controller.forward(command=velocity))
 
         tick += 1
         if tick > 1e8:

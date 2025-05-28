@@ -1,5 +1,5 @@
 print("Checking python modules...")
-DEPENDENCY_LIST = ["pynput", "numpy"]
+DEPENDENCY_LIST = ["numpy"]
 import sys,subprocess
 
 ## Check PyQt5

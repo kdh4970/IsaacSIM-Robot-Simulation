@@ -18,7 +18,7 @@ fi
 
 
 ## IsaacSIm ROS2 Env
-isaacsim_path="~/isaacsim"
+isaacsim_path="$HOME/isaacsim"
 if [ ! -d "$isaacsim_path" ]; then
 	echo "[Error] Could not find IsaacSIM. You should set 'isaacsim_path' manually."
 	echo "isaacsim_path : $isaacsim_path"
