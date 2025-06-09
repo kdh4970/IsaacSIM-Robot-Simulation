@@ -2,6 +2,7 @@ print("Checking python modules...")
 DEPENDENCY_LIST = ["numpy"]
 import sys,subprocess
 
+
 ## Check PyQt5
 try:
     from PyQt5.QtCore import Qt

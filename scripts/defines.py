@@ -1,27 +1,23 @@
 ## 0. Preset Selection
+ENVS = ["Cave", "Office", "Rivermark", "GameReady City", "NVIDIA City"]
+ROBOTS = ["turtlebot3_burger", "unitree_g1"]
+
 USD_PATH = {
-    "Cave": "/home/do/Desktop/IsaacSIM-Robot-Simulation/usd_scenes/Cave/cave_only.usd",
-    "Office": "/home/do/Desktop/IsaacSIM-Robot-Simulation/usd_scenes/Collected_office/office.usd",
-    "Rivermark": "/home/do/Desktop/IsaacSIM-Robot-Simulation/usd_scenes/Outdoor/Rivermark/rivermark_simple_flattened.usd",
-    "GameReady City": "/home/do/Desktop/IsaacSIM-Robot-Simulation/usd_scenes/Full_Gameready_City_Buildings/city_turtlebot_simplified.usd",
-    "NVIDIA City": "/home/do/Desktop/IsaacSIM-Robot-Simulation/usd_scenes/AECO_CityDemoPack_NVD@10011/Demos/AEC/TowerDemo/CityDemopack/World_CityDemopack_turtlebot.usd"
+    ENVS[0]: "/usd_scenes/Cave/cave_only.usd",
+    ENVS[1]: "/usd_scenes/Collected_office/office.usd",
+    ENVS[2]: "/usd_scenes/Outdoor/Rivermark/rivermark_simple_flattened.usd",
+    ENVS[3]: "/usd_scenes/Full_Gameready_City_Buildings/city_turtlebot_simplified.usd",
+    ENVS[4]: "/usd_scenes/AECO_CityDemoPack_NVD@10011/Demos/AEC/TowerDemo/CityDemopack/World_CityDemopack_turtlebot.usd"
 }
-SENSOR_PACK_URDF_PATH="/home/do/Desktop/IsaacSIM-Robot-Simulation/sensor_pack/sensor_pack.urdf"
+G1_USD_PATH = "/usd_scenes/g1.usd"
+SENSOR_PACK_URDF_PATH="/sensor_pack/sensor_pack.urdf"
 
-ROBOT_PRIM_PATH = {
-    "Cave": "/fuel/turtlebot3_burger",
-    "Office": "/World/turtlebot3_burger",
-    "Rivermark": "/World/turtlebot3_burger",
-    "GameReady City": "/scene/turtlebot3_burger",
-    "NVIDIA City": "/World/turtlebot3_burger"
-}
-
-ROBOT_POSITION = {
-    "Cave": [0.0, 0.0, 0.05],
-    "Office": [0.0, 0.0, 0.05],
-    "Rivermark": [0.0, 0.0, 5.9],
-    "GameReady City": [0.0, 0.0, 0.05],
-    "NVIDIA City": [-13.0, 0.0, 0.0]
+TURTLEBOT_POSITION = {
+    ENVS[0]: [0.0, 0.0, 0.05],
+    ENVS[1]: [0.0, 0.0, 0.05],
+    ENVS[2]: [0.0, 0.0, 5.9],
+    ENVS[3]: [0.0, 0.0, 0.05],
+    ENVS[4]: [-13.0, 0.0, 0.0]
 }
 
 ## 1. App Initialization 
@@ -88,8 +84,16 @@ ROS_CAMERA_GRAPH_PATH = "/ROS_Camera"
 ROS_IMU_GRAPH_PATH = "/ROS_IMU"
 ROS_TF_ODOM_GRAPH_PATH = "/ROS_Tf_Odom"
 
-# LIDAR_MODEL = "OS0_REV6_128ch30hz1024res"
-# LIDAR_MODEL = "OS0_REV6_128ch30hz512res"
-# LIDAR_MODEL = "OS0_REV6_64ch30hz1024res"
-LIDAR_MODEL = "OS0_REV6_32ch30hz1024res"
-# LIDAR_MODEL = "Livox_MID360"
+# # LIDAR_MODEL = "OS0_REV6_128ch30hz1024res"
+# # LIDAR_MODEL = "OS0_REV6_128ch30hz512res"
+# # LIDAR_MODEL = "OS0_REV6_64ch30hz1024res"
+# LIDAR_MODEL = "OS0_REV6_32ch30hz1024res"
+# # LIDAR_MODEL = "Livox_MID360"
+
+LIDAR_MODELS = [
+    "OS0_REV6_128ch30hz1024res",
+    "OS0_REV6_128ch30hz512res",
+    "OS0_REV6_64ch30hz1024res",
+    "OS0_REV6_32ch30hz1024res",
+    "Livox_MID360"
+    ]
