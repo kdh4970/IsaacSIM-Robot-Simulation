@@ -45,16 +45,16 @@ This project was conducted on below environments.
 
 Install IsaacSIM 4.5.0 and ROS2.  
 
-### 1. Clone this Repo  
+### 1. Clone this Repo and Submodule  
 ```
-git clone https://github.com/kdh4970/IsaacSIM-Robot-Simulation.git
+git clone --recursive https://github.com/kdh4970/IsaacSIM-Robot-Simulation.git
 ```
 
 ### 2. Edit Script  
 Change below things in run_sim.sh file.  
  - If isaacsim path is not "~/isaacsim", change it manually.  
  - Check your ROS path.  
- - If You dont use zsh, change "setup.zsh" to your shell.  
+ - If You dont use zsh, change "setup.zsh" to "setup.bash".  
 
 ### 3. Unzip Scenes  
 Unzip scene datas in usd_scenes directory.  
@@ -63,12 +63,11 @@ Unzip scene datas in usd_scenes directory.
 Move "lidar_configs" directory to "isaacsim/exts/isaacsim.sensors.rtx/data/lidar_configs".  
 Replace "extension.toml" to "isaacsim/exts/isaacsim.sensors.rtx/config/extension.toml".  
 
-You can select *LIDAR_MODEL* in the end of "defines.py".  
-
-We only tested below 4 models.  
+Tested lidar models.  
  * OS0_REV6_128ch30hz1024res  
  * OS0_REV6_128ch30hz512res  
  * OS0_REV6_64ch30hz1024res  
+ * OS0_REV6_32ch30hz1024res  
  * Livox_MID360  
 
 ### 5. Start Simulation  
