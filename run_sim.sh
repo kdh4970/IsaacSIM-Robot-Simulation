@@ -1,6 +1,8 @@
 #!/bin/zsh
 # Change all 'zsh' to 'bash' if you use bash shell.
 
+wd=$PWD
+
 # Find ROS and Launch Rviz2
 rviz_config="./rviz_config/config.rviz"
 ros_path1="/opt/ros/humble/local_setup.zsh"
@@ -35,5 +37,5 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$isaacsim_path/exts/isaacsim.ros2.bridge
 cd $isaacsim_path
 #exec /home/do/isaacsim/python.sh /home/do/isaacsim/test_scripts/run.py
 #exec /home/do/isaacsim/python.sh /home/do/isaacsim/standalone_examples/api/isaacsim.ros2.bridge/carter_stereo.py
-$isaacsim_path/python.sh /home/do/Desktop/IsaacSIM-Robot-Simulation/scripts/dependecy_check.py
-$isaacsim_path/python.sh /home/do/Desktop/IsaacSIM-Robot-Simulation/scripts/robot_simulation.py
+$isaacsim_path/python.sh $wd/scripts/dependecy_check.py
+$isaacsim_path/python.sh $wd/scripts/robot_simulation.py
