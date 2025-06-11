@@ -13,34 +13,27 @@ import numpy as np
 
 sleep(2) # waiting for RVIZ startup
 app = QApplication(sys.argv)
-# lstPreset = [
-#     "Cave + turtlebot3_burger",
-#     "Office + turtlebot3_burger",
-#     "Office + unitree_g1"
-#     "Rivermark + turtlebot3_burger",
-#     "GameReady City + turtlebot3_burger",
-#     "NVIDIA City + turtlebot3_burger",
-#     "Custom + Custom"]
-# preset_selector = PresetSelector(lstPreset)
-# env,robot = preset_selector.env, preset_selector.robot
-
-# if env==None or robot==None:
-#     os.system("pgrep -f rviz | xargs -r kill -15")
-#     exit()
 
 preset_selector = PresetSelector(env_list=defines.ENVS, robot_list=defines.ROBOTS, sensor_config=defines.ENABLE_SENSORS, lidar_list=defines.LIDAR_MODELS)
 
 if preset_selector.exec_() == QDialog.Accepted:
-    env, robot, sensor_settings, lidar_model = preset_selector.get_selections()
-    print(f"Selected Environment: {env}")
-    print(f"Selected Robot: {robot}")
-    print(f"Sensor Settings: {sensor_settings}")
-    print(f"Selected LiDAR: {lidar_model}")
+    _env, _robot, _performance_mode, _physics_steps, _render_steps, _sensor_settings, _lidar_model = preset_selector.get_selections()
+    _physics_dt = 1.0 / _physics_steps
+    _render_dt = 1.0 / _render_steps
+    _sync_with_realtime = False if _performance_mode == "Best performance" else True
+
+    print(f"Selected Environment: {_env}")
+    print(f"Selected Robot: {_robot}")
+    print(f"Performance Mode : {_performance_mode}")
+    print(f"Simulation Physics_dt : {_physics_dt}")
+    print(f"Simulation Render_dt : {_render_dt}")
+    print(f"Sensor Settings: {_sensor_settings}")
+    print(f"Selected LiDAR: {_lidar_model}")
 else:
     print("Selection canceled")
     os.system("pgrep -f rviz | xargs -r kill -15")
+    exit()
 app.quit()
-
 
 from pathlib import Path
 
@@ -48,15 +41,16 @@ script_dir = Path(__file__).resolve().parent
 parent_dir = str(script_dir.parent)
 print(parent_dir)
 
-
-
-usdPath = parent_dir + defines.USD_PATH[env]
-robotPrimPath = f"/{robot}"
-if robot == "turtlebot3_burger":
-    robotPosition = np.array(defines.TURTLEBOT_POSITION[env])
+usdPath = parent_dir + defines.USD_PATH[_env]
+robotPrimPath = f"/{_robot}"
+if _robot == "turtlebot3_burger":
+    robotPosition = defines.TURTLEBOT_POSITION[_env]
     sensorPackPrimPath = robotPrimPath + "/base_footprint/base_link/sensor_pack"
-elif robot == "unitree_g1":
-    robotPosition = np.array([0.0,0.0,0.76])
+elif _robot == "unitree_g1":
+    if _env == "Rivermark":
+        robotPosition = [0.0,0.0,6.5]
+    else:
+        robotPosition = [0.0,0.0,0.76]
 else:
     print("Not Implemented.")
     os.system("pgrep -f rviz | xargs -r kill -15")
@@ -102,12 +96,16 @@ app.update()
 #############################################
 
 ## USD Scene
+# In cave, texture will be broken when using add_reference_to_stage().
+# Also, unitree_g1 locomotion is not working when using open_stage().
 print_log("\n\n     Loading USD Scene...\n")
-# open_stage(usdPath)
-add_reference_to_stage(
-    usd_path=usdPath,
-    prim_path="/World/env"
-)
+if _env == "Cave": 
+    open_stage(usdPath)
+else:
+    add_reference_to_stage(
+        usd_path=usdPath,
+        prim_path="/World/env"
+    )
 stage = omni.usd.get_context().get_stage()
 
 # from omni.kit.menu.stage.content_browser_options import ContentBrowserOptions
@@ -118,7 +116,7 @@ stage = omni.usd.get_context().get_stage()
 app.update()
 
 
-if env=="Cave":  # Change stage lighting to camera lighting.
+if _env=="Cave":  # Change stage lighting to camera lighting.
     action_registry = omni.kit.actions.core.get_action_registry()
     action = action_registry.get_action("omni.kit.viewport.menubar.lighting", "set_lighting_mode_camera")
     action.execute()
@@ -126,9 +124,9 @@ if env=="Cave":  # Change stage lighting to camera lighting.
 
 
 from isaacsim.core.api import World
-world = World(stage_units_in_meters=1.0,physics_dt=defines.PHYSICS_DT,rendering_dt=defines.RENDER_DT)
+world = World(stage_units_in_meters=1.0,physics_dt=_physics_dt,rendering_dt=_render_dt)
 # simulation_context = SimulationContext(stage_units_in_meters=1.0,set_defaults=False)
-# simulation_context.set_simulation_dt(physics_dt=defines.PHYSICS_DT,rendering_dt=defines.RENDER_DT)
+# simulation_context.set_simulation_dt(physics_dt=_physics_dt,rendering_dt=_render_dt)
 
 
 
@@ -139,7 +137,7 @@ app.update()
 
 print_log(f"Creating robot at {robotPrimPath}...")
 world = World(stage_units_in_meters=1.0)
-if robot == "turtlebot3_burger":
+if _robot == "turtlebot3_burger":
     from isaacsim.robot.wheeled_robots.robots import WheeledRobot
     from isaacsim.robot.wheeled_robots.controllers.differential_controller import DifferentialController
     from isaacsim.storage.native import get_assets_root_path
@@ -161,10 +159,10 @@ if robot == "turtlebot3_burger":
             wheel_dof_names=["wheel_left_joint", "wheel_right_joint"],
             create_robot=True,
             usd_path=asset_path,
-            position=robotPosition,
+            position=np.array(robotPosition),
         )
     )
-    if env == "Rivermark":
+    if _env == "Rivermark":
         my_controller = DifferentialController(name="simple_control", wheel_radius=0.25, wheel_base=1.6,max_linear_speed=2.0,max_angular_speed=1.0)
     else:
         my_controller = DifferentialController(name="simple_control", wheel_radius=0.025, wheel_base=0.16,max_linear_speed=1.5,max_angular_speed=1.0)
@@ -214,7 +212,7 @@ if robot == "turtlebot3_burger":
             keep_world_transform=False,
             destructive=True)
         
-elif robot == "unitree_g1":
+elif _robot == "unitree_g1":
     from isaacsim_g1_locomotion.g1 import G1FlatTerrainPolicy
     for _ in defines.ROBOTS:
         try:
@@ -225,13 +223,13 @@ elif robot == "unitree_g1":
             pass
 
     base_command = [0, 0, 0]
-    g1 = G1FlatTerrainPolicy(prim_path=robotPrimPath, name=robot,usd_path=parent_dir + defines.G1_USD_PATH)
+    g1 = G1FlatTerrainPolicy(prim_path=robotPrimPath, name=_robot,usd_path=parent_dir + defines.G1_USD_PATH)
     # xform_api = UsdGeom.XformCommonAPI(robotPrimPath)
     # xform_api.SetTranslate(Gf.Vec3d(0.0, 0.0, 0.75))
 
     omni.kit.commands.execute('ChangeProperty',
         prop_path=Sdf.Path(f'{robotPrimPath + "/g1_minimal"}.xformOp:translate'),
-        value=Gf.Vec3d(0.0, 0.0, 0.75),
+        value=Gf.Vec3d(*robotPosition),
         prev=None,
         usd_context_name=stage)
 
@@ -245,28 +243,28 @@ app.update()
 
 ## Camera
 print_log("\n\n     Configuring Sensors...\n")
-if sensor_settings["Camera"]:
-    if robot == "turtlebot3_burger":
+if _sensor_settings["Camera"]:
+    if _robot == "turtlebot3_burger":
         camera1_prim_path = sensorPackPrimPath + defines.CAMERA_PREFIX_PATH + "/Camera"
-    elif robot == "unitree_g1":
+    elif _robot == "unitree_g1":
         camera1_prim_path = robotPrimPath + "/g1_minimal/torso_link/head_joint/d435_link" + "/Camera"
     else:
         raise NotImplementedError
     
     camera_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(camera1_prim_path, "Camera"))
     xform_api = UsdGeom.XformCommonAPI(camera_prim)
-    if robot == "turtlebot3_burger":
-        if env in ["Cave", "Office"]:
+    if _robot == "turtlebot3_burger":
+        if _env in ["Cave", "Office"]:
             # xform_api.SetTranslate(Gf.Vec3d(0.03, 0.0, 0.16)) # this for 1x scale
             xform_api.SetTranslate(Gf.Vec3d(0.06, 0.0, 0.32)) # this for 2x scale
             # xform_api.SetTranslate(Gf.Vec3d(0.1, 0.0, 0.5)) # this for 3x scale
-        elif env=="Rivermark":
+        elif _env=="Rivermark":
             xform_api.SetTranslate(Gf.Vec3d(0.0, 0.0, 0.13))
-        elif env=="City":
+        elif _env=="City":
             xform_api.SetTranslate(Gf.Vec3d(0.06, 0.0, 0.32))
-        elif env=="NVIDIA_City":
+        elif _env=="NVIDIA_City":
             xform_api.SetTranslate(Gf.Vec3d(0.06, 0.0, 0.32))
-    elif robot == "unitree_g1":
+    elif _robot == "unitree_g1":
         xform_api.SetTranslate(Gf.Vec3d(0.0, 0.0, 0.0))
     else:
         raise NotImplementedError
@@ -276,17 +274,21 @@ if sensor_settings["Camera"]:
     camera_prim.GetProjectionAttr().Set("perspective")
     camera_prim.GetFocalLengthAttr().Set(24)
     camera_prim.GetFocusDistanceAttr().Set(400)
-if sensor_settings["Camera2"]:
-    if robot == "turtlebot3_burger":
+if _sensor_settings["Camera2"]:
+    if _robot == "turtlebot3_burger":
         camera2_prim_path = sensorPackPrimPath + defines.CAMERA_PREFIX_PATH + "/Camera2"
-    elif robot == "unitree_g1":
+        cam2_traslation = Gf.Vec3d(-1.2, 0.0, 1.5)
+        cam2_rotation = (45, 0, -90)
+    elif _robot == "unitree_g1":
         camera2_prim_path = robotPrimPath + "/g1_minimal/torso_link/head_joint/d435_link" + "/Camera2"
+        cam2_traslation = Gf.Vec3d(-2.6, 0.0, -2.2)
+        cam2_rotation = (120, 0, -90)
     else:
         raise NotImplementedError
     camera_prim2 = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(camera2_prim_path, "Camera"))
     xform_api = UsdGeom.XformCommonAPI(camera_prim2)
-    xform_api.SetTranslate(Gf.Vec3d(-1.2, 0.0, 1.5)) 
-    xform_api.SetRotate((45, 0, -90), UsdGeom.XformCommonAPI.RotationOrderXYZ)
+    xform_api.SetTranslate(cam2_traslation) 
+    xform_api.SetRotate(cam2_rotation, UsdGeom.XformCommonAPI.RotationOrderXYZ)
     camera_prim2.GetHorizontalApertureAttr().Set(21)
     camera_prim2.GetVerticalApertureAttr().Set(16)
     camera_prim2.GetProjectionAttr().Set("perspective")
@@ -294,10 +296,10 @@ if sensor_settings["Camera2"]:
     camera_prim2.GetFocusDistanceAttr().Set(400)
 
 ## IMU
-if sensor_settings["Imu"]:
-    if robot == "turtlebot3_burger":
+if _sensor_settings["Imu"]:
+    if _robot == "turtlebot3_burger":
         imu_prim_path = sensorPackPrimPath + defines.IMU_PREFIX_PATH
-    elif robot == "unitree_g1":
+    elif _robot == "unitree_g1":
         imu_prim_path = robotPrimPath + "/g1_minimal/imu_link"
     else:
         raise NotImplementedError
@@ -316,7 +318,7 @@ app.update()
 
 # Creating an on-demand push graph with cameraHelper nodes to generate ROS image publishers
 keys = og.Controller.Keys
-if sensor_settings["Camera"]:
+if _sensor_settings["Camera"]:
     cameraNodeGraph_mono = {
             keys.CREATE_NODES: [
                 ("OnTick", "omni.graph.action.OnTick"),
@@ -353,7 +355,7 @@ if sensor_settings["Camera"]:
                 ("setCamera.inputs:cameraPrim", [usdrt.Sdf.Path(camera1_prim_path)]),
             ],
         }
-    if sensor_settings["Camera2"]:
+    if _sensor_settings["Camera2"]:
         cameraNodeGraph_stereo = {
             keys.CREATE_NODES: [
                 ("OnTick", "omni.graph.action.OnTick"),
@@ -390,7 +392,7 @@ if sensor_settings["Camera"]:
                 ("setCamera.inputs:cameraPrim", [usdrt.Sdf.Path(camera1_prim_path)]), ("setCamera2.inputs:cameraPrim", [usdrt.Sdf.Path(camera2_prim_path)]),
             ],
         }
-    cameraNodeGraph = cameraNodeGraph_stereo if sensor_settings["Camera2"] else cameraNodeGraph_mono
+    cameraNodeGraph = cameraNodeGraph_stereo if _sensor_settings["Camera2"] else cameraNodeGraph_mono
     (ros_camera_graph, _, _, _) = og.Controller.edit(
         {
             "graph_path": defines.ROS_CAMERA_GRAPH_PATH,
@@ -399,7 +401,7 @@ if sensor_settings["Camera"]:
         },
         cameraNodeGraph,
     )
-if sensor_settings["Imu"]:
+if _sensor_settings["Imu"]:
     
     (ros_imu_graph, _, _, _) = og.Controller.edit(
         {
@@ -436,7 +438,7 @@ if sensor_settings["Imu"]:
             ],
         },
     )
-if sensor_settings["TfOdom"]:
+if _sensor_settings["TfOdom"]:
     (ros_tf_odom_graph, _, _, _) = og.Controller.edit(
         {
             "graph_path": defines.ROS_TF_ODOM_GRAPH_PATH,
@@ -516,11 +518,11 @@ if sensor_settings["TfOdom"]:
     )
 
 # Run the ROS Camera graph once to generate ROS image publishers in SDGPipeline
-if sensor_settings["Camera"]: og.Controller.evaluate_sync(ros_camera_graph)
+if _sensor_settings["Camera"]: og.Controller.evaluate_sync(ros_camera_graph)
 app.update()
 
 # dock in
-if sensor_settings["Camera"] and sensor_settings["Camera2"]:
+if _sensor_settings["Camera"] and _sensor_settings["Camera2"]:
     import omni.kit.viewport.utility as vp_utils
     # Dock the second camera window
     left_viewport = omni.ui.Workspace.get_window("Viewport")
@@ -540,18 +542,18 @@ if sensor_settings["Camera"] and sensor_settings["Camera2"]:
 # simulation_context.initialize_physics()
 
 
-if sensor_settings["Lidar"]:
-    if env == "Rivermark":
+if _sensor_settings["Lidar"]:
+    if _env == "Rivermark":
         lidar_offset = (-0.03, 0, 0.21)
     else:
         lidar_offset = (-0.07, 0, 0.4)
-    if robot == "turtlebot3_burger":
+    if _robot == "turtlebot3_burger":
         lidar_prim_path = sensorPackPrimPath + defines.LIDAR_PREFIX_PATH + "/Lidar1"
     else:
         lidar_prim_path = robotPrimPath + "/g1_minimal/torso_link/head_joint/mid360_link" + "/Lidar"
 
 
-    if lidar_model == "Livox_MID360":
+    if _lidar_model == "Livox_MID360":
         lidar_prims=[]
         lidar_render_products = []
         writers = []
@@ -581,7 +583,7 @@ if sensor_settings["Lidar"]:
             writer.initialize(topicName="point_cloud", frameId="lidar_link")
             writer.attach([lidar_render_product])
             writers.append(writer)
-            if sensor_settings["DebugLidar"]:
+            if _sensor_settings["DebugLidar"]:
                 # Create the debug draw pipeline in the post process graph
                 writerd = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
                 writerd.attach([lidar_render_product])
@@ -603,7 +605,7 @@ if sensor_settings["Lidar"]:
             "IsaacSensorCreateRtxLidar",
             path=lidar_prim_path,
             parent=None,
-            config=lidar_model,
+            config=_lidar_model,
             translation=lidar_offset,
             orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),  # Gf.Quatd is w,i,j,k
         )
@@ -614,7 +616,7 @@ if sensor_settings["Lidar"]:
         writer.initialize(topicName="point_cloud", frameId="lidar_link")
         writer.attach([lidar_render_product])
 
-        if sensor_settings["DebugLidar"]:
+        if _sensor_settings["DebugLidar"]:
             # Create the debug draw pipeline in the post process graph
             writer1 = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
             writer1.attach([lidar_render_product])
@@ -699,7 +701,7 @@ world.stop()
 ###                                       ###
 #############################################
 import numpy as np
-if robot == "turtlebot3_burger":
+if _robot == "turtlebot3_burger":
     my_controller.reset()
     print("[ Tuetlebot Control Instructions ]")
     print(" ↑ : Increase linear velocity")
@@ -739,7 +741,7 @@ if robot == "turtlebot3_burger":
                 print(f"  Keybord : {event.input.name} >> Set Velocity : {velocity}")
                 need_update_vel = True
 
-elif robot == "unitree_g1":
+elif _robot == "unitree_g1":
     print("[ G1 Control Instructions ]")
     print(" ↑ : Move Forward")
     print(" ↓ : Stop")
@@ -780,7 +782,7 @@ tick = 0
 reset_needed = False
 need_update_vel = False
 
-trace_prim = robotPrimPath+"/base_footprint" if robot == "turtlebot3_burger" else robotPrimPath+"/g1_minimal/torso_link"
+trace_prim = robotPrimPath+"/base_footprint" if _robot == "turtlebot3_burger" else robotPrimPath+"/g1_minimal/torso_link"
 distance_calculator = DistanceCalculator(trace_prim)
 print(f"Target tracing prim : {trace_prim}")
 
@@ -792,14 +794,14 @@ while app.is_running():
     if tick != 0: tick = 0
 
     ## Real-time Syncronous Simulation
-    while world.is_playing() and defines.ENABLE_REALTIME_SYNC:
+    while world.is_playing() and _sync_with_realtime:
         if reset_needed:
             world.reset()
-            if robot == "turtlebot3_burger": my_controller.reset()
+            if _robot == "turtlebot3_burger": my_controller.reset()
             reset_needed = False
 
         if tick == 0:
-            if robot == "unitree_g1":
+            if _robot == "unitree_g1":
                 world.reset()
                 g1.initialize()
                 
@@ -808,34 +810,46 @@ while app.is_running():
                         g1.forward(step_size, base_command)
                 world.add_physics_callback("physics_step", callback_fn=on_physics_step)
             now = perf_counter()
-            next_physics_time = now + defines.PHYSICS_DT
-            next_render_time = now + defines.RENDER_DT
+            next_physics_time = now + _physics_dt
+            next_render_time = now + _render_dt
 
         now = perf_counter()
 
         while now > next_physics_time:
             world.step(render=False)
-            next_physics_time += defines.PHYSICS_DT
+            next_physics_time += _physics_dt
             total_distance = distance_calculator.update_distance()
 
         if now > next_render_time:
             world.render()
-            next_render_time += defines.RENDER_DT
+            next_render_time += _render_dt
             print(f" Traveled distance: {total_distance:.3f} meters",end = "\r")
-            if sensor_settings["TfOdom"]: ros_tf_odom_graph.evaluate()
+            if _sensor_settings["TfOdom"]: ros_tf_odom_graph.evaluate()
             
-        if robot == "turtlebot3_burger": robot_prim.apply_wheel_actions(my_controller.forward(command=velocity))
+        if _robot == "turtlebot3_burger": robot_prim.apply_wheel_actions(my_controller.forward(command=velocity))
 
         tick += 1
         if tick > 1e8:
             tick = 1
 
     ## Best Performance Simulation
-    while world.is_playing() and not defines.ENABLE_REALTIME_SYNC:
+    while world.is_playing() and not _sync_with_realtime:
         if reset_needed:
             world.reset()
-            my_controller.reset()
+            if _robot == "turtlebot3_burger": my_controller.reset()
             reset_needed = False
+        if tick == 0:
+            if _robot == "unitree_g1":
+                world.reset()
+                g1.initialize()
+                
+                def on_physics_step(step_size):
+                    if g1:
+                        g1.forward(step_size, base_command)
+                world.add_physics_callback("physics_step", callback_fn=on_physics_step)
+            now = perf_counter()
+            next_physics_time = now + _physics_dt
+            next_render_time = now + _render_dt
 
 
         world.step(render=False)
@@ -844,11 +858,11 @@ while app.is_running():
         if tick % 3==2:
             world.render()
             print(f" Traveled distance: {total_distance:.3f} meters",end = "\r")
-            if sensor_settings["TfOdom"]: ros_tf_odom_graph.evaluate()
+            if _sensor_settings["TfOdom"]: ros_tf_odom_graph.evaluate()
             
         if need_update_vel:
             need_update_vel = False
-            if robot == "turtlebot3_burger": robot_prim.apply_wheel_actions(my_controller.forward(command=velocity))
+            if _robot == "turtlebot3_burger": robot_prim.apply_wheel_actions(my_controller.forward(command=velocity))
 
         tick += 1
         if tick > 1e8:

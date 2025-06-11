@@ -61,9 +61,6 @@ EXTENSIONS = [
     "omni.kit.profiler.window" # Profiler
 ]
 
-PHYSICS_DT = 1/100
-RENDER_DT = 1/30
-
 ## 3. Sensor Configuration
 ENABLE_SENSORS = {
     "Camera":True,
@@ -73,9 +70,6 @@ ENABLE_SENSORS = {
     "DebugLidar":False,
     "TfOdom":True
 }
-
-ENABLE_REALTIME_SYNC = True  # If false, the simulator operates at maximum performance. Only turn on this option when simulator runs faster than desired Hz.
-
 CAMERA_PREFIX_PATH = "/sensors_link/camera_link"
 IMU_PREFIX_PATH = "/sensors_link/imu_link"
 LIDAR_PREFIX_PATH = "/sensors_link/lidar_link"
