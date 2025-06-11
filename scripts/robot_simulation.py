@@ -52,10 +52,8 @@ elif _robot == "unitree_g1":
     else:
         robotPosition = [0.0,0.0,0.76]
 else:
-    print("Not Implemented.")
     os.system("pgrep -f rviz | xargs -r kill -15")
-    exit()
-
+    raise NotImplementedError
 #############################################
 ###                                       ###
 ###          1. App Initalization         ###
@@ -249,6 +247,7 @@ if _sensor_settings["Camera"]:
     elif _robot == "unitree_g1":
         camera1_prim_path = robotPrimPath + "/g1_minimal/torso_link/head_joint/d435_link" + "/Camera"
     else:
+        os.system("pgrep -f rviz | xargs -r kill -15")
         raise NotImplementedError
     
     camera_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(camera1_prim_path, "Camera"))
@@ -267,6 +266,7 @@ if _sensor_settings["Camera"]:
     elif _robot == "unitree_g1":
         xform_api.SetTranslate(Gf.Vec3d(0.0, 0.0, 0.0))
     else:
+        os.system("pgrep -f rviz | xargs -r kill -15")
         raise NotImplementedError
     xform_api.SetRotate((90, 0, -90), UsdGeom.XformCommonAPI.RotationOrderXYZ)
     camera_prim.GetHorizontalApertureAttr().Set(21)
@@ -284,6 +284,7 @@ if _sensor_settings["Camera2"]:
         cam2_traslation = Gf.Vec3d(-2.6, 0.0, -2.2)
         cam2_rotation = (120, 0, -90)
     else:
+        os.system("pgrep -f rviz | xargs -r kill -15")
         raise NotImplementedError
     camera_prim2 = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(camera2_prim_path, "Camera"))
     xform_api = UsdGeom.XformCommonAPI(camera_prim2)
@@ -302,6 +303,7 @@ if _sensor_settings["Imu"]:
     elif _robot == "unitree_g1":
         imu_prim_path = robotPrimPath + "/g1_minimal/imu_link"
     else:
+        os.system("pgrep -f rviz | xargs -r kill -15")
         raise NotImplementedError
     
     success, imu_prim = omni.kit.commands.execute(

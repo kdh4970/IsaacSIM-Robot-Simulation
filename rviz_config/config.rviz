@@ -6,6 +6,7 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
+        - /PointCloud21
         - /TF1
         - /TF1/Frames1
       Splitter Ratio: 0.5
@@ -66,14 +67,14 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
+        Max Value: 33.81473159790039
+        Min Value: -0.5329030752182007
         Value: true
       Axis: Z
       Channel Name: intensity
       Class: rviz_default_plugins/PointCloud2
       Color: 255; 255; 255
-      Color Transformer: Intensity
+      Color Transformer: AxisColor
       Decay Time: 0
       Enabled: true
       Invert Rainbow: false
@@ -188,16 +189,15 @@ Visualization Manager:
             base_link:
               base_footprint:
                 {}
-              camera_link:
-                {}
-              imu_link:
-                {}
-              lidar_link:
-                {}
               sensor_pack:
-                {}
-              sensors_link:
-                {}
+                camera_link:
+                  {}
+                imu_link:
+                  {}
+                lidar_link:
+                  {}
+                sensors_link:
+                  {}
               wheel_left_link:
                 {}
               wheel_right_link:
