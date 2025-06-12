@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt
+import defines
 
 class PresetSelector(QDialog):
     def __init__(self, env_list, robot_list, lidar_list, sensor_config):
@@ -59,7 +60,7 @@ class PresetSelector(QDialog):
         self.physics_per_second_edit.setFixedWidth(50)
         dt_layout.addWidget(self.physics_per_second_edit)
         layout.addLayout(dt_layout)
-        
+
         dt_layout2 = QHBoxLayout()
         dt_label2 = QLabel("Render steps per second:")
         dt_label2.setStyleSheet("font-size: 16px;")

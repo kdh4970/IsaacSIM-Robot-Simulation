@@ -26,7 +26,7 @@ if preset_selector.exec_() == QDialog.Accepted:
     print(f"Selected Robot: {_robot}")
     print(f"Performance Mode : {_performance_mode}")
     print(f"Simulation Physics_dt : {_physics_dt}")
-    print(f"Simulation Render_dt : {_render_dt}")
+    print(f"Simuation Render_dt : {_render_dt}")
     print(f"Sensor Settings: {_sensor_settings}")
     print(f"Selected LiDAR: {_lidar_model}")
 else:
