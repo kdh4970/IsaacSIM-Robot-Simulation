@@ -34,7 +34,7 @@ LAUNCH_CONFIG = {
     "headless":False,
     "fast_shutdown":True,
     "renderer":"RayTracedLighting",
-    "multi_gpu":True,
+    "multi_gpu":False,
     "window_width":1920,
     "window_height":1080,
     "display_options": DISP_FPS|DISP_RESOLUTION|DISP_MESH|DISP_DEV_MEM|DISP_HOST_MEM,
