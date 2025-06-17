@@ -28,7 +28,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: PointCloud2
+    SyncSource: ""
 Visualization Manager:
   Class: ""
   Displays:
@@ -156,53 +156,13 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        base_footprint:
-          Value: false
-        base_link:
-          Value: true
-        camera_link:
-          Value: false
-        imu_link:
-          Value: false
-        lidar_link:
-          Value: false
-        odom:
-          Value: false
-        sensor_pack:
-          Value: false
-        sensors_link:
-          Value: false
-        wheel_left_link:
-          Value: false
-        wheel_right_link:
-          Value: false
-        world:
-          Value: true
       Marker Scale: 15
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        world:
-          odom:
-            base_link:
-              base_footprint:
-                {}
-              camera_link:
-                {}
-              imu_link:
-                {}
-              lidar_link:
-                {}
-              sensor_pack:
-                {}
-              sensors_link:
-                {}
-              wheel_left_link:
-                {}
-              wheel_right_link:
-                {}
+        {}
       Update Interval: 0
       Value: true
     - Class: rviz_default_plugins/Image
@@ -236,7 +196,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: world
+    Fixed Frame: lidar_link
     Frame Rate: 30
   Name: root
   Tools:
@@ -317,5 +277,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1242
-  X: 72
-  Y: 0
+  X: 1318
+  Y: 274

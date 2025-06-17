@@ -1,6 +1,8 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt
 import defines
+import json
+import sys
 
 class PresetSelector(QDialog):
     def __init__(self, env_list, robot_list, lidar_list, sensor_config):
@@ -197,3 +199,42 @@ class PresetSelector(QDialog):
             if not new_state:
                 # 라이다가 비활성화되면 첫 번째 항목으로 리셋
                 self.lidar_combo.setCurrentIndex(0)
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    preset_selector = PresetSelector(env_list=defines.ENVS, robot_list=defines.ROBOTS, sensor_config=defines.ENABLE_SENSORS, lidar_list=defines.LIDAR_MODELS)
+
+    if preset_selector.exec_() == QDialog.Accepted:
+        _env, _robot, _performance_mode, _physics_steps, _render_steps, _sensor_settings, _lidar_model = preset_selector.get_selections()
+        _sync_with_realtime = False if _performance_mode == "Best performance" else True
+
+        print(f"Selected Environment: {_env}")
+        print(f"Selected Robot: {_robot}")
+        print(f"Performance Mode : {_performance_mode}")
+        print(f"Sensor Settings: {_sensor_settings}")
+        print(f"Selected LiDAR: {_lidar_model}")
+
+        config = {
+            "environment": _env,
+            "robot": _robot,
+            "performance_mode": _performance_mode,
+            "physics_steps": _physics_steps,
+            "render_steps": _render_steps,
+            "sync_with_realtime": _sync_with_realtime,
+            "sensor_settings": _sensor_settings,
+            "lidar_model": _lidar_model
+        }
+        try:
+            from pathlib import Path
+
+            script_dir = Path(__file__).resolve().parent
+            parent_dir = str(script_dir.parent)
+
+            with open(f'{parent_dir}/config/sim_config.json', 'w', encoding='utf-8') as f:
+                json.dump(config, f, indent=4, ensure_ascii=False)
+        except Exception as e:
+            print(e)
+
+    else:
+        print(f"Canceled")
+        exit()

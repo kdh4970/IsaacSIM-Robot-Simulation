@@ -4,7 +4,7 @@
 wd=$PWD
 
 # Find ROS and Launch Rviz2
-rviz_config="./rviz_config/config.rviz"
+rviz_config="./config/config.rviz"
 ros_path1="/opt/ros/humble/local_setup.zsh"
 ros_path2="$HOME/ros2_humble/install/local_setup.zsh"
 if  [ -f "$ros_path1" ]; then
@@ -36,4 +36,4 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$isaacsim_path/exts/isaacsim.ros2.bridge
 ## IsaacSIM
 cd $isaacsim_path
 $isaacsim_path/python.sh $wd/scripts/dependecy_check.py
-$isaacsim_path/python.sh $wd/scripts/robot_simulation.py
+$isaacsim_path/python.sh $wd/scripts/single_simulation.py

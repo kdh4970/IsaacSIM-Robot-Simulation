@@ -10,6 +10,8 @@ from preset_selector import PresetSelector
 from PyQt5.QtWidgets import QApplication, QDialog
 import sys
 import numpy as np
+import json
+from pathlib import Path
 
 sleep(2) # waiting for RVIZ startup
 app = QApplication(sys.argv)
@@ -26,7 +28,7 @@ if preset_selector.exec_() == QDialog.Accepted:
     print(f"Selected Robot: {_robot}")
     print(f"Performance Mode : {_performance_mode}")
     print(f"Simulation Physics_dt : {_physics_dt}")
-    print(f"Simulation Render_dt : {_render_dt}")
+    print(f"Simuation Render_dt : {_render_dt}")
     print(f"Sensor Settings: {_sensor_settings}")
     print(f"Selected LiDAR: {_lidar_model}")
 else:
@@ -40,6 +42,7 @@ from pathlib import Path
 script_dir = Path(__file__).resolve().parent
 parent_dir = str(script_dir.parent)
 print(parent_dir)
+
 
 usdPath = parent_dir + defines.USD_PATH[_env]
 robotPrimPath = f"/{_robot}"

@@ -8,38 +8,57 @@ import os
 from time import sleep, perf_counter
 from preset_selector import PresetSelector
 from PyQt5.QtWidgets import QApplication, QDialog
-import sys
+import json
 import numpy as np
-
-sleep(2) # waiting for RVIZ startup
-app = QApplication(sys.argv)
-
-preset_selector = PresetSelector(env_list=defines.ENVS, robot_list=defines.ROBOTS, sensor_config=defines.ENABLE_SENSORS, lidar_list=defines.LIDAR_MODELS)
-
-if preset_selector.exec_() == QDialog.Accepted:
-    _env, _robot, _performance_mode, _physics_steps, _render_steps, _sensor_settings, _lidar_model = preset_selector.get_selections()
-    _physics_dt = 1.0 / _physics_steps
-    _render_dt = 1.0 / _render_steps
-    _sync_with_realtime = False if _performance_mode == "Best performance" else True
-
-    print(f"Selected Environment: {_env}")
-    print(f"Selected Robot: {_robot}")
-    print(f"Performance Mode : {_performance_mode}")
-    print(f"Simulation Physics_dt : {_physics_dt}")
-    print(f"Simuation Render_dt : {_render_dt}")
-    print(f"Sensor Settings: {_sensor_settings}")
-    print(f"Selected LiDAR: {_lidar_model}")
-else:
-    print("Selection canceled")
-    os.system("pgrep -f rviz | xargs -r kill -15")
-    exit()
-app.quit()
-
 from pathlib import Path
 
 script_dir = Path(__file__).resolve().parent
 parent_dir = str(script_dir.parent)
 print(parent_dir)
+
+def load_config(config_file=f'{parent_dir}/config/sim_config.json'):
+    try:
+        if not os.path.exists(config_file):
+            raise FileNotFoundError
+            
+        with open(config_file, 'r', encoding='utf-8') as f:
+            config = json.load(f)
+            
+        return config
+        
+    except json.JSONDecodeError as e:
+        print(f"Failed to parse json file: {e}")
+        return None
+    except Exception as e:
+        print(e)
+        return None
+
+
+config = load_config()
+
+if config is not None:
+    _env = config.get('environment')
+    _robot = config.get('robot')
+    _performance_mode = config.get('performance_mode')
+    _physics_steps = config.get('physics_steps')
+    # _render_steps = config.get('render_steps')
+    _render_steps = 10
+    _physics_dt = 1.0 / _physics_steps
+    _render_dt = 1.0 / _render_steps
+    _sync_with_realtime = config.get('sync_with_realtime')
+    _sensor_settings = config.get('sensor_settings')
+    _lidar_model = config.get('lidar_model')
+    
+    print(f"Environment: {_env}")
+    print(f"Robot: {_robot}")
+    print(f"Performance Mode: {_performance_mode}")
+    print(f"Physics Steps: {_physics_steps}")
+    print(f"Render Steps: {_render_steps}")
+    print(f"Physics dt: {_physics_dt}")
+    print(f"Render dt: {_render_dt}")
+    print(f"Sync with Realtime: {_sync_with_realtime}")
+    print(f"Sensor Settings: {_sensor_settings}")
+    print(f"LiDAR Model: {_lidar_model}")
 
 usdPath = parent_dir + defines.USD_PATH[_env]
 robotPrimPath = f"/{_robot}"
@@ -66,7 +85,9 @@ def print_log(text):
 
 # Initialize Simulation App
 from isaacsim import SimulationApp
-app = SimulationApp(launch_config=defines.LAUNCH_CONFIG)
+launch_config = defines.LAUNCH_CONFIG
+launch_config["headless"] = True
+app = SimulationApp(launch_config=launch_config)
 
 # Late import for Isaacsim & Omniverse API
 import omni
@@ -129,7 +150,6 @@ world = World(stage_units_in_meters=1.0,physics_dt=_physics_dt,rendering_dt=_ren
 
 
 app.update()
-
 
 ## Robot
 
@@ -239,63 +259,6 @@ app.update()
 ###                                       ###
 #############################################
 
-## Camera
-print_log("\n\n     Configuring Sensors...\n")
-if _sensor_settings["Camera"]:
-    if _robot == "turtlebot3_burger":
-        camera1_prim_path = sensorPackPrimPath + defines.CAMERA_PREFIX_PATH + "/Camera"
-    elif _robot == "unitree_g1":
-        camera1_prim_path = robotPrimPath + "/g1_minimal/torso_link/head_joint/d435_link" + "/Camera"
-    else:
-        os.system("pgrep -f rviz | xargs -r kill -15")
-        raise NotImplementedError
-    
-    camera_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(camera1_prim_path, "Camera"))
-    xform_api = UsdGeom.XformCommonAPI(camera_prim)
-    if _robot == "turtlebot3_burger":
-        if _env in ["Cave", "Office"]:
-            # xform_api.SetTranslate(Gf.Vec3d(0.03, 0.0, 0.16)) # this for 1x scale
-            xform_api.SetTranslate(Gf.Vec3d(0.06, 0.0, 0.32)) # this for 2x scale
-            # xform_api.SetTranslate(Gf.Vec3d(0.1, 0.0, 0.5)) # this for 3x scale
-        elif _env=="Rivermark":
-            xform_api.SetTranslate(Gf.Vec3d(0.0, 0.0, 0.13))
-        elif _env=="City":
-            xform_api.SetTranslate(Gf.Vec3d(0.06, 0.0, 0.32))
-        elif _env=="NVIDIA_City":
-            xform_api.SetTranslate(Gf.Vec3d(0.06, 0.0, 0.32))
-    elif _robot == "unitree_g1":
-        xform_api.SetTranslate(Gf.Vec3d(0.0, 0.0, 0.0))
-    else:
-        os.system("pgrep -f rviz | xargs -r kill -15")
-        raise NotImplementedError
-    xform_api.SetRotate((90, 0, -90), UsdGeom.XformCommonAPI.RotationOrderXYZ)
-    camera_prim.GetHorizontalApertureAttr().Set(21)
-    camera_prim.GetVerticalApertureAttr().Set(16)
-    camera_prim.GetProjectionAttr().Set("perspective")
-    camera_prim.GetFocalLengthAttr().Set(24)
-    camera_prim.GetFocusDistanceAttr().Set(400)
-if _sensor_settings["Camera2"]:
-    if _robot == "turtlebot3_burger":
-        camera2_prim_path = sensorPackPrimPath + defines.CAMERA_PREFIX_PATH + "/Camera2"
-        cam2_traslation = Gf.Vec3d(-1.2, 0.0, 1.5)
-        cam2_rotation = (45, 0, -90)
-    elif _robot == "unitree_g1":
-        camera2_prim_path = robotPrimPath + "/g1_minimal/torso_link/head_joint/d435_link" + "/Camera2"
-        cam2_traslation = Gf.Vec3d(-2.6, 0.0, -2.2)
-        cam2_rotation = (120, 0, -90)
-    else:
-        os.system("pgrep -f rviz | xargs -r kill -15")
-        raise NotImplementedError
-    camera_prim2 = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(camera2_prim_path, "Camera"))
-    xform_api = UsdGeom.XformCommonAPI(camera_prim2)
-    xform_api.SetTranslate(cam2_traslation) 
-    xform_api.SetRotate(cam2_rotation, UsdGeom.XformCommonAPI.RotationOrderXYZ)
-    camera_prim2.GetHorizontalApertureAttr().Set(21)
-    camera_prim2.GetVerticalApertureAttr().Set(16)
-    camera_prim2.GetProjectionAttr().Set("perspective")
-    camera_prim2.GetFocalLengthAttr().Set(24)
-    camera_prim2.GetFocusDistanceAttr().Set(400)
-
 ## IMU
 if _sensor_settings["Imu"]:
     if _robot == "turtlebot3_burger":
@@ -320,89 +283,6 @@ app.update()
 
 # Creating an on-demand push graph with cameraHelper nodes to generate ROS image publishers
 keys = og.Controller.Keys
-if _sensor_settings["Camera"]:
-    cameraNodeGraph_mono = {
-            keys.CREATE_NODES: [
-                ("OnTick", "omni.graph.action.OnTick"),
-                ("createViewport", "isaacsim.core.nodes.IsaacCreateViewport"),
-                ("getRenderProduct", "isaacsim.core.nodes.IsaacGetViewportRenderProduct"),
-                ("setCamera", "isaacsim.core.nodes.IsaacSetCameraOnRenderProduct"),
-                ("cameraHelperRgb", "isaacsim.ros2.bridge.ROS2CameraHelper"),
-                ("cameraHelperInfo", "isaacsim.ros2.bridge.ROS2CameraInfoHelper"),
-                ("cameraHelperDepth", "isaacsim.ros2.bridge.ROS2CameraHelper"),
-            ],
-            keys.CONNECT: [
-                ("OnTick.outputs:tick", "createViewport.inputs:execIn"),
-                ("createViewport.outputs:execOut", "getRenderProduct.inputs:execIn"),
-                ("createViewport.outputs:viewport", "getRenderProduct.inputs:viewport"),
-                ("getRenderProduct.outputs:execOut", "setCamera.inputs:execIn"),
-                ("getRenderProduct.outputs:renderProductPath", "setCamera.inputs:renderProductPath"),
-                ("setCamera.outputs:execOut", "cameraHelperRgb.inputs:execIn"),
-                ("setCamera.outputs:execOut", "cameraHelperInfo.inputs:execIn"),
-                ("setCamera.outputs:execOut", "cameraHelperDepth.inputs:execIn"),
-                ("getRenderProduct.outputs:renderProductPath", "cameraHelperRgb.inputs:renderProductPath"),
-                ("getRenderProduct.outputs:renderProductPath", "cameraHelperInfo.inputs:renderProductPath"),
-                ("getRenderProduct.outputs:renderProductPath", "cameraHelperDepth.inputs:renderProductPath"),
-            ],
-            keys.SET_VALUES: [
-                ("createViewport.inputs:viewportId", 0),
-                ("cameraHelperRgb.inputs:frameId", "camera_link"),
-                ("cameraHelperRgb.inputs:topicName", "rgb"),
-                ("cameraHelperRgb.inputs:type", "rgb"),
-                ("cameraHelperInfo.inputs:frameId", "camera_link"),
-                ("cameraHelperInfo.inputs:topicName", "camera_info"),
-                ("cameraHelperDepth.inputs:frameId", "camera_link"),
-                ("cameraHelperDepth.inputs:topicName", "depth"),
-                ("cameraHelperDepth.inputs:type", "depth"),
-                ("setCamera.inputs:cameraPrim", [usdrt.Sdf.Path(camera1_prim_path)]),
-            ],
-        }
-    if _sensor_settings["Camera2"]:
-        cameraNodeGraph_stereo = {
-            keys.CREATE_NODES: [
-                ("OnTick", "omni.graph.action.OnTick"),
-                ("createViewport", "isaacsim.core.nodes.IsaacCreateViewport"),("createViewport2", "isaacsim.core.nodes.IsaacCreateViewport"),
-                ("getRenderProduct", "isaacsim.core.nodes.IsaacGetViewportRenderProduct"), ("getRenderProduct2", "isaacsim.core.nodes.IsaacGetViewportRenderProduct"),
-                ("setCamera", "isaacsim.core.nodes.IsaacSetCameraOnRenderProduct"), ("setCamera2", "isaacsim.core.nodes.IsaacSetCameraOnRenderProduct"),
-                ("cameraHelperRgb", "isaacsim.ros2.bridge.ROS2CameraHelper"), ("cameraHelperRgb2", "isaacsim.ros2.bridge.ROS2CameraHelper"),
-                ("cameraHelperInfo", "isaacsim.ros2.bridge.ROS2CameraInfoHelper"), ("cameraHelperInfo2", "isaacsim.ros2.bridge.ROS2CameraInfoHelper"),
-                ("cameraHelperDepth", "isaacsim.ros2.bridge.ROS2CameraHelper"), ("cameraHelperDepth2", "isaacsim.ros2.bridge.ROS2CameraHelper"),
-            ],
-            keys.CONNECT: [
-                ("OnTick.outputs:tick", "createViewport.inputs:execIn"), ("OnTick.outputs:tick", "createViewport2.inputs:execIn"),
-                ("createViewport.outputs:execOut", "getRenderProduct.inputs:execIn"), ("createViewport2.outputs:execOut", "getRenderProduct2.inputs:execIn"),
-                ("createViewport.outputs:viewport", "getRenderProduct.inputs:viewport"), ("createViewport2.outputs:viewport", "getRenderProduct2.inputs:viewport"),
-                ("getRenderProduct.outputs:execOut", "setCamera.inputs:execIn"), ("getRenderProduct2.outputs:execOut", "setCamera2.inputs:execIn"),
-                ("getRenderProduct.outputs:renderProductPath", "setCamera.inputs:renderProductPath"), ("getRenderProduct2.outputs:renderProductPath", "setCamera2.inputs:renderProductPath"),
-                ("setCamera.outputs:execOut", "cameraHelperRgb.inputs:execIn"), ("setCamera2.outputs:execOut", "cameraHelperRgb2.inputs:execIn"),
-                ("setCamera.outputs:execOut", "cameraHelperInfo.inputs:execIn"), ("setCamera2.outputs:execOut", "cameraHelperInfo2.inputs:execIn"),
-                ("setCamera.outputs:execOut", "cameraHelperDepth.inputs:execIn"), ("setCamera2.outputs:execOut", "cameraHelperDepth2.inputs:execIn"),
-                ("getRenderProduct.outputs:renderProductPath", "cameraHelperRgb.inputs:renderProductPath"), ("getRenderProduct2.outputs:renderProductPath", "cameraHelperRgb2.inputs:renderProductPath"),
-                ("getRenderProduct.outputs:renderProductPath", "cameraHelperInfo.inputs:renderProductPath"), ("getRenderProduct2.outputs:renderProductPath", "cameraHelperInfo2.inputs:renderProductPath"),
-                ("getRenderProduct.outputs:renderProductPath", "cameraHelperDepth.inputs:renderProductPath"), ("getRenderProduct2.outputs:renderProductPath", "cameraHelperDepth2.inputs:renderProductPath"),
-            ],
-            keys.SET_VALUES: [
-                ("createViewport.inputs:viewportId", 0), ("createViewport2.inputs:viewportId", 1),
-                ("cameraHelperRgb.inputs:frameId", "camera_link"), ("cameraHelperRgb2.inputs:frameId", "camera_link"),
-                ("cameraHelperRgb.inputs:topicName", "rgb"), ("cameraHelperRgb2.inputs:topicName", "rgb2"),
-                ("cameraHelperRgb.inputs:type", "rgb"), ("cameraHelperRgb2.inputs:type", "rgb"),
-                ("cameraHelperInfo.inputs:frameId", "camera_link"), ("cameraHelperInfo2.inputs:frameId", "camera_link"),
-                ("cameraHelperInfo.inputs:topicName", "camera_info"), ("cameraHelperInfo2.inputs:topicName", "camera_info2"),
-                ("cameraHelperDepth.inputs:frameId", "camera_link"), ("cameraHelperDepth2.inputs:frameId", "camera_link"),
-                ("cameraHelperDepth.inputs:topicName", "depth"), ("cameraHelperDepth2.inputs:topicName", "depth2"),
-                ("cameraHelperDepth.inputs:type", "depth"), ("cameraHelperDepth2.inputs:type", "depth"),
-                ("setCamera.inputs:cameraPrim", [usdrt.Sdf.Path(camera1_prim_path)]), ("setCamera2.inputs:cameraPrim", [usdrt.Sdf.Path(camera2_prim_path)]),
-            ],
-        }
-    cameraNodeGraph = cameraNodeGraph_stereo if _sensor_settings["Camera2"] else cameraNodeGraph_mono
-    (ros_camera_graph, _, _, _) = og.Controller.edit(
-        {
-            "graph_path": defines.ROS_CAMERA_GRAPH_PATH,
-            "evaluator_name": "push",
-            "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_SIMULATION,
-        },
-        cameraNodeGraph,
-    )
 if _sensor_settings["Imu"]:
     
     (ros_imu_graph, _, _, _) = og.Controller.edit(
@@ -519,20 +399,7 @@ if _sensor_settings["TfOdom"]:
         },
     )
 
-# Run the ROS Camera graph once to generate ROS image publishers in SDGPipeline
-if _sensor_settings["Camera"]: og.Controller.evaluate_sync(ros_camera_graph)
 app.update()
-
-# dock in
-if _sensor_settings["Camera"] and _sensor_settings["Camera2"]:
-    import omni.kit.viewport.utility as vp_utils
-    # Dock the second camera window
-    left_viewport = omni.ui.Workspace.get_window("Viewport")
-    right_viewport = omni.ui.Workspace.get_window("1")
-    if right_viewport is not None and left_viewport is not None:
-        right_viewport.dock_in(left_viewport, omni.ui.DockPosition.RIGHT)
-    right_viewport = None
-    left_viewport = None
 
 
 # Lidar : /Render/PostProcess/SDGPipeline/Isaac_PostProcessDispatchIsaacSimulationGate
@@ -544,89 +411,8 @@ if _sensor_settings["Camera"] and _sensor_settings["Camera2"]:
 # simulation_context.initialize_physics()
 
 
-if _sensor_settings["Lidar"]:
-    if _env == "Rivermark":
-        lidar_offset = (-0.03, 0, 0.21)
-    else:
-        lidar_offset = (-0.07, 0, 0.4)
-    if _robot == "turtlebot3_burger":
-        lidar_prim_path = sensorPackPrimPath + defines.LIDAR_PREFIX_PATH + "/Lidar1"
-    else:
-        lidar_prim_path = robotPrimPath + "/g1_minimal/torso_link/head_joint/mid360_link" + "/Lidar"
 
-
-    if _lidar_model == "Livox_MID360":
-        lidar_prims=[]
-        lidar_render_products = []
-        writers = []
-        num_livox_parts = 5
-        lidar_steps = [11,12,13,14,15]
-
-        # Create parts of MID360
-        for _ in range(num_livox_parts):
-            _, lidar_prim = omni.kit.commands.execute(
-                "IsaacSensorCreateRtxLidar",
-                path=lidar_prim_path,
-                parent=None,
-                config="MID360_" + str(_+1),
-                # translation=(-0.03, 0, 0.18), # this for 1x scale
-                translation=lidar_offset, # this for 2x scale
-                # translation=(-0.1, 0, 0.57), # this for 3x scale
-                orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),  # Gf.Quatd is w,i,j,k
-            )
-            lidar_prims.append(lidar_prim)
-
-            # RTX sensors are cameras and must be assigned to their own render product
-            lidar_render_product = rep.create.render_product(lidar_prim.GetPath(), [1, 1], name="Isaac")
-            lidar_render_products.append(lidar_render_product)
-
-            # Create Point cloud publisher pipeline in the post process graph
-            writer = rep.writers.get("RtxLidar" + "ROS2PublishPointCloud")
-            writer.initialize(topicName="point_cloud", frameId="lidar_link")
-            writer.attach([lidar_render_product])
-            writers.append(writer)
-            if _sensor_settings["DebugLidar"]:
-                # Create the debug draw pipeline in the post process graph
-                writerd = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
-                writerd.attach([lidar_render_product])
-                writers.append(writerd)
-
-        lidar_gate_paths = [
-            "/Render/PostProcess/SDGPipeline/Isaac_PostProcessDispatchIsaacSimulationGate",
-            "/Render/PostProcess/SDGPipeline/Isaac_01_PostProcessDispatchIsaacSimulationGate",
-            "/Render/PostProcess/SDGPipeline/Isaac_02_PostProcessDispatchIsaacSimulationGate",
-            "/Render/PostProcess/SDGPipeline/Isaac_03_PostProcessDispatchIsaacSimulationGate",
-            "/Render/PostProcess/SDGPipeline/Isaac_04_PostProcessDispatchIsaacSimulationGate"
-            ]
-        for path,step in zip(lidar_gate_paths,lidar_steps):
-            og.Controller.attribute(path+".inputs:step").set(step)
-            
-
-    else:
-        _, lidar_prim = omni.kit.commands.execute(
-            "IsaacSensorCreateRtxLidar",
-            path=lidar_prim_path,
-            parent=None,
-            config=_lidar_model,
-            translation=lidar_offset,
-            orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),  # Gf.Quatd is w,i,j,k
-        )
-        # RTX sensors are cameras and must be assigned to their own render product
-        lidar_render_product = rep.create.render_product(lidar_prim.GetPath(), [1, 1], name="Isaac")
-        # Create Point cloud publisher pipeline in the post process graph
-        writer = rep.writers.get("RtxLidar" + "ROS2PublishPointCloud")
-        writer.initialize(topicName="point_cloud", frameId="lidar_link")
-        writer.attach([lidar_render_product])
-
-        if _sensor_settings["DebugLidar"]:
-            # Create the debug draw pipeline in the post process graph
-            writer1 = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
-            writer1.attach([lidar_render_product])
-
-        lidar_gate_path = "/Render/PostProcess/SDGPipeline/Isaac_PostProcessDispatchIsaacSimulationGate"
-        lidar_step_size = 3
-        og.Controller.attribute(lidar_gate_path+".inputs:step").set(lidar_step_size)
-            # Change Settings
+# Change Settings
 import carb
 import carb.settings
 _settings = carb.settings.get_settings()
@@ -852,15 +638,13 @@ while app.is_running():
                         g1.forward(step_size, base_command)
                 world.add_physics_callback("physics_step", callback_fn=on_physics_step)
             now = perf_counter()
-            next_physics_time = now + _physics_dt
-            next_render_time = now + _render_dt
 
 
         world.step(render=False)
         total_distance = distance_calculator.update_distance()
         
-        if tick % 3==2:
-            world.render()
+        if tick % _render_steps==0:
+            # world.render()
             print(f" Traveled distance: {total_distance:.3f} meters",end = "\r")
             if _sensor_settings["TfOdom"]: ros_tf_odom_graph.evaluate()
             
