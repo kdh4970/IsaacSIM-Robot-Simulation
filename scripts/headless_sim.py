@@ -411,6 +411,85 @@ app.update()
 # simulation_context.initialize_physics()
 
 
+if _sensor_settings["Lidar"]:
+    if _env == "Rivermark":
+        lidar_offset = (-0.03, 0, 0.21)
+    else:
+        lidar_offset = (-0.07, 0, 0.4)
+    if _robot == "turtlebot3_burger":
+        lidar_prim_path = sensorPackPrimPath + defines.LIDAR_PREFIX_PATH + "/Lidar1"
+    else:
+        lidar_prim_path = robotPrimPath + "/g1_minimal/torso_link/head_joint/mid360_link" + "/Lidar"
+
+
+    if _lidar_model == "Livox_MID360":
+        lidar_prims=[]
+        lidar_render_products = []
+        writers = []
+        num_livox_parts = 4
+        lidar_steps = [3,4,5,7]
+
+        # Create parts of MID360
+        for _ in range(num_livox_parts):
+            _, lidar_prim = omni.kit.commands.execute(
+                "IsaacSensorCreateRtxLidar",
+                path=lidar_prim_path,
+                parent=None,
+                config="MID360_" + str(_+1),
+                # translation=(-0.03, 0, 0.18), # this for 1x scale
+                translation=lidar_offset, # this for 2x scale
+                # translation=(-0.1, 0, 0.57), # this for 3x scale
+                orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),  # Gf.Quatd is w,i,j,k
+            )
+            lidar_prims.append(lidar_prim)
+
+            # RTX sensors are cameras and must be assigned to their own render product
+            lidar_render_product = rep.create.render_product(lidar_prim.GetPath(), [1, 1], name="Isaac")
+            lidar_render_products.append(lidar_render_product)
+
+            # Create Point cloud publisher pipeline in the post process graph
+            writer = rep.writers.get("RtxLidar" + "ROS2PublishPointCloud")
+            writer.initialize(topicName="point_cloud", frameId="lidar_link")
+            writer.attach([lidar_render_product])
+            writers.append(writer)
+            if _sensor_settings["DebugLidar"]:
+                # Create the debug draw pipeline in the post process graph
+                writerd = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
+                writerd.attach([lidar_render_product])
+                writers.append(writerd)
+
+        lidar_gate_paths = ["/Render/PostProcess/SDGPipeline/Isaac_PostProcessDispatchIsaacSimulationGate"]
+        for _ in range(1,num_livox_parts):
+            lidar_gate_paths.append(f"/Render/PostProcess/SDGPipeline/Isaac_0{_}_PostProcessDispatchIsaacSimulationGate",)
+    
+        for _ in range(num_livox_parts):
+            og.Controller.attribute(lidar_gate_paths[_]+".inputs:step").set(lidar_steps[_])
+            
+
+    else:
+        _, lidar_prim = omni.kit.commands.execute(
+            "IsaacSensorCreateRtxLidar",
+            path=lidar_prim_path,
+            parent=None,
+            config=_lidar_model,
+            translation=lidar_offset,
+            orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),  # Gf.Quatd is w,i,j,k
+        )
+        # RTX sensors are cameras and must be assigned to their own render product
+        lidar_render_product = rep.create.render_product(lidar_prim.GetPath(), [1, 1], name="Isaac")
+        # Create Point cloud publisher pipeline in the post process graph
+        writer = rep.writers.get("RtxLidar" + "ROS2PublishPointCloud")
+        writer.initialize(topicName="point_cloud", frameId="lidar_link")
+        writer.attach([lidar_render_product])
+
+        if _sensor_settings["DebugLidar"]:
+            # Create the debug draw pipeline in the post process graph
+            writer1 = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
+            writer1.attach([lidar_render_product])
+
+        lidar_gate_path = "/Render/PostProcess/SDGPipeline/Isaac_PostProcessDispatchIsaacSimulationGate"
+        lidar_step_size = 1
+        og.Controller.attribute(lidar_gate_path+".inputs:step").set(lidar_step_size)
 
 # Change Settings
 import carb
@@ -478,8 +557,36 @@ omni.kit.commands.execute('ChangeProperty',
 	prev=None,
 	usd_context_name=stage)
 
+## Configure shared memory
+print_log("Setting shared memory...")
+import sysv_ipc
+
+try:
+    path = '/tmp/shared_data'
+    fd = os.open(path, flags=os.O_CREAT)
+    os.close(fd)
+    key = 1000
+except Exception as e:
+    print(e)
+    exit()
+
+try:
+    sem = sysv_ipc.Semaphore(key + 1, sysv_ipc.IPC_CREX, initial_value=1)
+except sysv_ipc.ExistentialError:
+    sem = sysv_ipc.Semaphore(key + 1)
+
+try:
+    # cam1 : x, y, z, roll, pitch, yaw
+    # cam2 : x, y, z, roll, pitch, yaw
+    # 6*2* 4byte = 48 bytes
+    shm = sysv_ipc.SharedMemory(key, size=48, flags=sysv_ipc.IPC_CREAT, mode=0o644)
+except sysv_ipc.ExistentialError:
+    shm = sysv_ipc.SharedMemory(key)
+    
 
 print_log("\n\n     Simulator Ready!\n")
+
+
 world.reset()
 world.stop()
 
@@ -644,7 +751,7 @@ while app.is_running():
         total_distance = distance_calculator.update_distance()
         
         if tick % _render_steps==0:
-            # world.render()
+            world.render()
             print(f" Traveled distance: {total_distance:.3f} meters",end = "\r")
             if _sensor_settings["TfOdom"]: ros_tf_odom_graph.evaluate()
             

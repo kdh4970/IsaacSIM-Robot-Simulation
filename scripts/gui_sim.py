@@ -45,7 +45,8 @@ if config is not None:
     _render_steps = config.get('render_steps')
     _physics_dt = 1.0 / _physics_steps
     _render_dt = 1.0 / _render_steps
-    _sync_with_realtime = config.get('sync_with_realtime')
+    # _sync_with_realtime = config.get('sync_with_realtime')
+    _sync_with_realtime = True
     _sensor_settings = config.get('sensor_settings')
     _lidar_model = config.get('lidar_model')
     
@@ -278,88 +279,88 @@ if _sensor_settings["Camera"] and _sensor_settings["Camera2"]:
 
 
 
-if _sensor_settings["Lidar"]:
-    if _env == "Rivermark":
-        lidar_offset = (-0.03, 0, 0.21)
-    else:
-        lidar_offset = (-0.07, 0, 0.4)
-    if _robot == "turtlebot3_burger":
-        lidar_prim_path = "/Lidar1"
-    else:
-        lidar_prim_path = "/Lidar"
+# if _sensor_settings["Lidar"]:
+#     if _env == "Rivermark":
+#         lidar_offset = (-0.03, 0, 0.21)
+#     else:
+#         lidar_offset = (-0.07, 0, 0.4)
+#     if _robot == "turtlebot3_burger":
+#         lidar_prim_path = "/Lidar1"
+#     else:
+#         lidar_prim_path = "/Lidar"
 
 
-    if _lidar_model == "Livox_MID360":
-        lidar_prims=[]
-        lidar_render_products = []
-        writers = []
-        num_livox_parts = 5
-        lidar_steps = [11,12,13,14,15]
+#     if _lidar_model == "Livox_MID360":
+#         lidar_prims=[]
+#         lidar_render_products = []
+#         writers = []
+#         num_livox_parts = 5
+#         lidar_steps = [11,12,13,14,15]
 
-        # Create parts of MID360
-        for _ in range(num_livox_parts):
-            _, lidar_prim = omni.kit.commands.execute(
-                "IsaacSensorCreateRtxLidar",
-                path=lidar_prim_path,
-                parent=None,
-                config="MID360_" + str(_+1),
-                # translation=(-0.03, 0, 0.18), # this for 1x scale
-                translation=lidar_offset, # this for 2x scale
-                # translation=(-0.1, 0, 0.57), # this for 3x scale
-                orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),  # Gf.Quatd is w,i,j,k
-            )
-            lidar_prims.append(lidar_prim)
+#         # Create parts of MID360
+#         for _ in range(num_livox_parts):
+#             _, lidar_prim = omni.kit.commands.execute(
+#                 "IsaacSensorCreateRtxLidar",
+#                 path=lidar_prim_path,
+#                 parent=None,
+#                 config="MID360_" + str(_+1),
+#                 # translation=(-0.03, 0, 0.18), # this for 1x scale
+#                 translation=lidar_offset, # this for 2x scale
+#                 # translation=(-0.1, 0, 0.57), # this for 3x scale
+#                 orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),  # Gf.Quatd is w,i,j,k
+#             )
+#             lidar_prims.append(lidar_prim)
 
-            # RTX sensors are cameras and must be assigned to their own render product
-            lidar_render_product = rep.create.render_product(lidar_prim.GetPath(), [1, 1], name="Isaac")
-            lidar_render_products.append(lidar_render_product)
+#             # RTX sensors are cameras and must be assigned to their own render product
+#             lidar_render_product = rep.create.render_product(lidar_prim.GetPath(), [1, 1], name="Isaac")
+#             lidar_render_products.append(lidar_render_product)
 
-            # Create Point cloud publisher pipeline in the post process graph
-            writer = rep.writers.get("RtxLidar" + "ROS2PublishPointCloud")
-            writer.initialize(topicName="point_cloud", frameId="lidar_link")
-            writer.attach([lidar_render_product])
-            writers.append(writer)
-            if _sensor_settings["DebugLidar"]:
-                # Create the debug draw pipeline in the post process graph
-                writerd = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
-                writerd.attach([lidar_render_product])
-                writers.append(writerd)
+#             # Create Point cloud publisher pipeline in the post process graph
+#             writer = rep.writers.get("RtxLidar" + "ROS2PublishPointCloud")
+#             writer.initialize(topicName="point_cloud", frameId="lidar_link")
+#             writer.attach([lidar_render_product])
+#             writers.append(writer)
+#             if _sensor_settings["DebugLidar"]:
+#                 # Create the debug draw pipeline in the post process graph
+#                 writerd = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
+#                 writerd.attach([lidar_render_product])
+#                 writers.append(writerd)
 
-        lidar_gate_paths = [
-            "/Render/PostProcess/SDGPipeline/Isaac_PostProcessDispatchIsaacSimulationGate",
-            "/Render/PostProcess/SDGPipeline/Isaac_01_PostProcessDispatchIsaacSimulationGate",
-            "/Render/PostProcess/SDGPipeline/Isaac_02_PostProcessDispatchIsaacSimulationGate",
-            "/Render/PostProcess/SDGPipeline/Isaac_03_PostProcessDispatchIsaacSimulationGate",
-            "/Render/PostProcess/SDGPipeline/Isaac_04_PostProcessDispatchIsaacSimulationGate"
-            ]
-        for path,step in zip(lidar_gate_paths,lidar_steps):
-            og.Controller.attribute(path+".inputs:step").set(step)
+#         lidar_gate_paths = [
+#             "/Render/PostProcess/SDGPipeline/Isaac_PostProcessDispatchIsaacSimulationGate",
+#             "/Render/PostProcess/SDGPipeline/Isaac_01_PostProcessDispatchIsaacSimulationGate",
+#             "/Render/PostProcess/SDGPipeline/Isaac_02_PostProcessDispatchIsaacSimulationGate",
+#             "/Render/PostProcess/SDGPipeline/Isaac_03_PostProcessDispatchIsaacSimulationGate",
+#             "/Render/PostProcess/SDGPipeline/Isaac_04_PostProcessDispatchIsaacSimulationGate"
+#             ]
+#         for path,step in zip(lidar_gate_paths,lidar_steps):
+#             og.Controller.attribute(path+".inputs:step").set(step)
             
 
-    else:
-        _, lidar_prim = omni.kit.commands.execute(
-            "IsaacSensorCreateRtxLidar",
-            path=lidar_prim_path,
-            parent=None,
-            config=_lidar_model,
-            translation=lidar_offset,
-            orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),  # Gf.Quatd is w,i,j,k
-        )
-        # RTX sensors are cameras and must be assigned to their own render product
-        lidar_render_product = rep.create.render_product(lidar_prim.GetPath(), [1, 1], name="Isaac")
-        # Create Point cloud publisher pipeline in the post process graph
-        writer = rep.writers.get("RtxLidar" + "ROS2PublishPointCloud")
-        writer.initialize(topicName="point_cloud", frameId="lidar_link")
-        writer.attach([lidar_render_product])
+#     else:
+#         _, lidar_prim = omni.kit.commands.execute(
+#             "IsaacSensorCreateRtxLidar",
+#             path=lidar_prim_path,
+#             parent=None,
+#             config=_lidar_model,
+#             translation=lidar_offset,
+#             orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),  # Gf.Quatd is w,i,j,k
+#         )
+#         # RTX sensors are cameras and must be assigned to their own render product
+#         lidar_render_product = rep.create.render_product(lidar_prim.GetPath(), [1, 1], name="Isaac")
+#         # Create Point cloud publisher pipeline in the post process graph
+#         writer = rep.writers.get("RtxLidar" + "ROS2PublishPointCloud")
+#         writer.initialize(topicName="point_cloud", frameId="lidar_link")
+#         writer.attach([lidar_render_product])
 
-        if _sensor_settings["DebugLidar"]:
-            # Create the debug draw pipeline in the post process graph
-            writer1 = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
-            writer1.attach([lidar_render_product])
+#         if _sensor_settings["DebugLidar"]:
+#             # Create the debug draw pipeline in the post process graph
+#             writer1 = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
+#             writer1.attach([lidar_render_product])
 
-        lidar_gate_path = "/Render/PostProcess/SDGPipeline/Isaac_PostProcessDispatchIsaacSimulationGate"
-        lidar_step_size = 3
-        og.Controller.attribute(lidar_gate_path+".inputs:step").set(lidar_step_size)
+#         lidar_gate_path = "/Render/PostProcess/SDGPipeline/Isaac_PostProcessDispatchIsaacSimulationGate"
+#         lidar_step_size = 3
+#         og.Controller.attribute(lidar_gate_path+".inputs:step").set(lidar_step_size)
 
 
 import carb
@@ -375,7 +376,7 @@ _settings.set_bool("/rtx/translucency/enabled", False)
 _settings.set_bool("/rtx/post/histogram/enabled", False) 
 
 # Brightness
-_settings.set_float("/rtx/sceneDb/ambientLightIntensity", 0.4)
+_settings.set_float("/rtx/sceneDb/ambientLightIntensity", 0.3)
 omni.kit.commands.execute('ChangeSetting',
 	path='/rtx/sceneDb/ambientLightColor',
 	value=[1.0, 1.0, 1.0])
@@ -428,6 +429,30 @@ omni.kit.commands.execute('ChangeProperty',
 	usd_context_name=stage)
 
 
+print_log("Setting shared memory...")
+import sysv_ipc,time
+
+path = '/tmp/shared_data'
+if not os.path.exists(path):
+    assert f"Could not find {path}. You should execute headleess_sim first."
+    exit()
+
+key = 1000
+
+try:
+    sem = sysv_ipc.Semaphore(key + 1)
+except sysv_ipc.ExistentialError:
+    print(f"Could not find semaphore. Key : {key}")
+    exit()
+
+try:
+    shm = sysv_ipc.SharedMemory(key)
+except sysv_ipc.ExistentialError:
+    print(f"Could not find shared memory. Key : {key}")
+    exit()
+
+
+
 print_log("\n\n     Simulator Ready!\n")
 world.reset()
 world.stop()
@@ -437,7 +462,6 @@ world.stop()
 ###              4. Main Loop             ###
 ###                                       ###
 #############################################
-import numpy as np
 
 # 메인 루프
 tick = 0
@@ -458,14 +482,13 @@ while app.is_running():
             world.reset()
             reset_needed = False
 
+        now = perf_counter()
         if tick == 0:
-            now = perf_counter()
             next_render_time = now + _render_dt
 
-        now = perf_counter()
 
         if now > next_render_time:
-            world.render()
+            world.step()
             next_render_time += _render_dt
             
         tick += 1
@@ -477,7 +500,7 @@ while app.is_running():
         if reset_needed:
             world.reset()
             reset_needed = False
-        world.render()
+        world.step()
             
         tick += 1
         if tick > 1e8:

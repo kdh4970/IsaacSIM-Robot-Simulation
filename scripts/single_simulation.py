@@ -562,8 +562,8 @@ if _sensor_settings["Lidar"]:
         lidar_prims=[]
         lidar_render_products = []
         writers = []
-        num_livox_parts = 5
-        lidar_steps = [11,12,13,14,15]
+        num_livox_parts = 4
+        lidar_steps = [11,13,14,15]
 
         # Create parts of MID360
         for _ in range(num_livox_parts):
@@ -594,16 +594,13 @@ if _sensor_settings["Lidar"]:
                 writerd.attach([lidar_render_product])
                 writers.append(writerd)
 
-        lidar_gate_paths = [
-            "/Render/PostProcess/SDGPipeline/Isaac_PostProcessDispatchIsaacSimulationGate",
-            "/Render/PostProcess/SDGPipeline/Isaac_01_PostProcessDispatchIsaacSimulationGate",
-            "/Render/PostProcess/SDGPipeline/Isaac_02_PostProcessDispatchIsaacSimulationGate",
-            "/Render/PostProcess/SDGPipeline/Isaac_03_PostProcessDispatchIsaacSimulationGate",
-            "/Render/PostProcess/SDGPipeline/Isaac_04_PostProcessDispatchIsaacSimulationGate"
-            ]
-        for path,step in zip(lidar_gate_paths,lidar_steps):
-            og.Controller.attribute(path+".inputs:step").set(step)
-            
+        lidar_gate_paths = ["/Render/PostProcess/SDGPipeline/Isaac_PostProcessDispatchIsaacSimulationGate"]
+        for _ in range(1,num_livox_parts):
+            lidar_gate_paths.append(f"/Render/PostProcess/SDGPipeline/Isaac_0{_}_PostProcessDispatchIsaacSimulationGate",)
+    
+        for _ in range(num_livox_parts):
+            og.Controller.attribute(lidar_gate_paths[_]+".inputs:step").set(lidar_steps[_])
+
 
     else:
         _, lidar_prim = omni.kit.commands.execute(

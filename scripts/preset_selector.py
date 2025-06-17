@@ -236,5 +236,5 @@ if __name__ == "__main__":
             print(e)
 
     else:
-        print(f"Canceled")
+        print(f"Aborted. Default config will be used.")
         exit()
