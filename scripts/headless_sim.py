@@ -259,6 +259,42 @@ app.update()
 ###                                       ###
 #############################################
 
+## Dummy camera
+if _sensor_settings["Camera"]:
+    if _robot == "turtlebot3_burger":
+        camera1_prim_path = sensorPackPrimPath + defines.CAMERA_PREFIX_PATH + "/Camera"
+    elif _robot == "unitree_g1":
+        camera1_prim_path = robotPrimPath + "/g1_minimal/torso_link/head_joint/d435_link" + "/Camera"
+    else:
+        os.system("pgrep -f rviz | xargs -r kill -15")
+        raise NotImplementedError
+    
+    camera_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(camera1_prim_path, "Camera"))
+    xform_api = UsdGeom.XformCommonAPI(camera_prim)
+    if _robot == "turtlebot3_burger":
+        if _env in ["Cave", "Office"]:
+            # xform_api.SetTranslate(Gf.Vec3d(0.03, 0.0, 0.16)) # this for 1x scale
+            xform_api.SetTranslate(Gf.Vec3d(0.06, 0.0, 0.32)) # this for 2x scale
+            # xform_api.SetTranslate(Gf.Vec3d(0.1, 0.0, 0.5)) # this for 3x scale
+        elif _env=="Rivermark":
+            xform_api.SetTranslate(Gf.Vec3d(0.0, 0.0, 0.13))
+        elif _env=="City":
+            xform_api.SetTranslate(Gf.Vec3d(0.06, 0.0, 0.32))
+        elif _env=="NVIDIA_City":
+            xform_api.SetTranslate(Gf.Vec3d(0.06, 0.0, 0.32))
+    elif _robot == "unitree_g1":
+        xform_api.SetTranslate(Gf.Vec3d(0.0, 0.0, 0.0))
+    else:
+        os.system("pgrep -f rviz | xargs -r kill -15")
+        raise NotImplementedError
+    xform_api.SetRotate((90,0, -90), UsdGeom.XformCommonAPI.RotationOrderXYZ)
+    camera_prim.GetHorizontalApertureAttr().Set(21)
+    camera_prim.GetVerticalApertureAttr().Set(16)
+    camera_prim.GetProjectionAttr().Set("perspective")
+    camera_prim.GetFocalLengthAttr().Set(24)
+    camera_prim.GetFocusDistanceAttr().Set(400)
+
+
 ## IMU
 if _sensor_settings["Imu"]:
     if _robot == "turtlebot3_burger":
@@ -283,6 +319,53 @@ app.update()
 
 # Creating an on-demand push graph with cameraHelper nodes to generate ROS image publishers
 keys = og.Controller.Keys
+# if _sensor_settings["Camera"]:
+#     cameraNodeGraph_mono = {
+#             keys.CREATE_NODES: [
+#                 ("OnTick", "omni.graph.action.OnTick"),
+#                 ("createViewport", "isaacsim.core.nodes.IsaacCreateViewport"),
+#                 ("getRenderProduct", "isaacsim.core.nodes.IsaacGetViewportRenderProduct"),
+#                 ("setCamera", "isaacsim.core.nodes.IsaacSetCameraOnRenderProduct"),
+#                 ("cameraHelperRgb", "isaacsim.ros2.bridge.ROS2CameraHelper"),
+#                 ("cameraHelperInfo", "isaacsim.ros2.bridge.ROS2CameraInfoHelper"),
+#                 ("cameraHelperDepth", "isaacsim.ros2.bridge.ROS2CameraHelper"),
+#             ],
+#             keys.CONNECT: [
+#                 ("OnTick.outputs:tick", "createViewport.inputs:execIn"),
+#                 ("createViewport.outputs:execOut", "getRenderProduct.inputs:execIn"),
+#                 ("createViewport.outputs:viewport", "getRenderProduct.inputs:viewport"),
+#                 ("getRenderProduct.outputs:execOut", "setCamera.inputs:execIn"),
+#                 ("getRenderProduct.outputs:renderProductPath", "setCamera.inputs:renderProductPath"),
+#                 ("setCamera.outputs:execOut", "cameraHelperRgb.inputs:execIn"),
+#                 ("setCamera.outputs:execOut", "cameraHelperInfo.inputs:execIn"),
+#                 ("setCamera.outputs:execOut", "cameraHelperDepth.inputs:execIn"),
+#                 ("getRenderProduct.outputs:renderProductPath", "cameraHelperRgb.inputs:renderProductPath"),
+#                 ("getRenderProduct.outputs:renderProductPath", "cameraHelperInfo.inputs:renderProductPath"),
+#                 ("getRenderProduct.outputs:renderProductPath", "cameraHelperDepth.inputs:renderProductPath"),
+#             ],
+#             keys.SET_VALUES: [
+#                 ("createViewport.inputs:viewportId", 0),
+#                 ("cameraHelperRgb.inputs:frameId", "camera_link"),
+#                 ("cameraHelperRgb.inputs:topicName", "rgb0"),
+#                 ("cameraHelperRgb.inputs:type", "rgb"),
+#                 ("cameraHelperInfo.inputs:frameId", "camera_link"),
+#                 ("cameraHelperInfo.inputs:topicName", "camera_info"),
+#                 ("cameraHelperDepth.inputs:frameId", "camera_link"),
+#                 ("cameraHelperDepth.inputs:topicName", "depth0"),
+#                 ("cameraHelperDepth.inputs:type", "depth"),
+#                 ("setCamera.inputs:cameraPrim", [usdrt.Sdf.Path(camera1_prim_path)]),
+#             ],
+#         }
+    
+#     (ros_camera_graph, _, _, _) = og.Controller.edit(
+#         {
+#             "graph_path": defines.ROS_CAMERA_GRAPH_PATH,
+#             "evaluator_name": "push",
+#             "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_SIMULATION,
+#         },
+#         cameraNodeGraph_mono,
+#     )
+
 if _sensor_settings["Imu"]:
     
     (ros_imu_graph, _, _, _) = og.Controller.edit(
@@ -399,6 +482,8 @@ if _sensor_settings["TfOdom"]:
         },
     )
 
+# if _sensor_settings["Camera"]: og.Controller.evaluate_sync(ros_camera_graph)
+
 app.update()
 
 
@@ -426,8 +511,8 @@ if _sensor_settings["Lidar"]:
         lidar_prims=[]
         lidar_render_products = []
         writers = []
-        num_livox_parts = 4
-        lidar_steps = [3,4,5,7]
+        num_livox_parts = 5
+        lidar_steps = [3,4,5,7,11]
 
         # Create parts of MID360
         for _ in range(num_livox_parts):
@@ -559,7 +644,7 @@ omni.kit.commands.execute('ChangeProperty',
 
 ## Configure shared memory
 print_log("Setting shared memory...")
-import sysv_ipc
+import sysv_ipc, struct
 
 try:
     path = '/tmp/shared_data'
@@ -575,21 +660,62 @@ try:
 except sysv_ipc.ExistentialError:
     sem = sysv_ipc.Semaphore(key + 1)
 
+if _sensor_settings["Camera2"]:
+    print("Using 2 cameras. Second camera movement is not implemented.")
+
 try:
-    # cam1 : x, y, z, roll, pitch, yaw
-    # cam2 : x, y, z, roll, pitch, yaw
+    # cam1 : x, y, z, r, p, y
+    # cam2 : x, y, z, r, p, y
     # 6*2* 4byte = 48 bytes
-    shm = sysv_ipc.SharedMemory(key, size=48, flags=sysv_ipc.IPC_CREAT, mode=0o644)
+    shm_size = 48 if _sensor_settings["Camera2"] else 24
+    shm = sysv_ipc.SharedMemory(key, size=shm_size, flags=sysv_ipc.IPC_CREAT, mode=0o644)
 except sysv_ipc.ExistentialError:
     shm = sysv_ipc.SharedMemory(key)
-    
+
+## Array : Translation(x,y,z), Rotation(r,p,y)
+
+camera1_prim = stage.GetPrimAtPath(camera1_prim_path)
+from scipy.spatial.transform import Rotation as R
+
+
+def write_shm():
+    sem.acquire()
+    try:
+        data = []
+        
+        timeline = omni.timeline.get_timeline_interface()
+        timecode = timeline.get_current_time() * timeline.get_time_codes_per_seconds()
+
+        # 월드 변환 행렬 획득
+        world_transform = omni.usd.get_world_transform_matrix(camera1_prim, timecode)
+
+        # 위치와 회전 정보 추출
+        translation = world_transform.ExtractTranslation()
+        rotation_quat = world_transform.ExtractRotation().GetQuaternion()
+
+        imaginary = rotation_quat.GetImaginary()
+        r = R.from_quat([imaginary[0], imaginary[1], imaginary[2], rotation_quat.GetReal()])
+        euler_angles = r.as_euler('xyz', degrees=True)
+        data.extend(translation)
+        data.extend(euler_angles)
+
+        # print(f"writing data : {data}")
+        if _sensor_settings["Camera2"]:
+            shm.write(struct.pack('12f', *data))
+        else:
+            shm.write(struct.pack('6f', *data))
+    finally:
+        sem.release()
+
 
 print_log("\n\n     Simulator Ready!\n")
+
 
 
 world.reset()
 world.stop()
 
+from pynput import keyboard
 #############################################
 ###                                       ###
 ###              4. Main Loop             ###
@@ -598,84 +724,93 @@ world.stop()
 import numpy as np
 if _robot == "turtlebot3_burger":
     my_controller.reset()
-    print("[ Tuetlebot Control Instructions ]")
+    print("[ Turtlebot Control Instructions ]")
     print(" ↑ : Increase linear velocity")
     print(" ↓ : Decrease linear velocity")
     print(" ← : Rotate Left")
     print(" → : Rotate Right")
     print(" S : Stop")
 
-    ## Setup Keyboard
-    velocity=[0.0,0.0] # lin_vel,ang_vel
+    # Setup Keyboard
+    velocity = [0.0, 0.0]
     dv = 0.05
     dr = np.pi/36.0
+    need_update_vel = True
+    running = True
 
     _key_to_control = {
-        "UP"   : [dv,  0.0],
-        "DOWN" : [-dv, 0.0],
-        "LEFT" : [0.0, dr],
-        "RIGHT": [0.0, -dr],
+        keyboard.Key.up: [dv, 0.0],
+        keyboard.Key.down: [-dv, 0.0],
+        keyboard.Key.left: [0.0, dr],
+        keyboard.Key.right: [0.0, -dr],
     }
 
-    _input = carb.input.acquire_input_interface()
-    _keyboard = omni.appwindow.get_default_app_window().get_keyboard()
-    need_update_vel = True
+    def on_key_press(key):
+        global velocity, need_update_vel, running
+        """키보드 이벤트를 확인하고 눌린 키에 따라 해당 제어 명령을 할당합니다."""
+        
+        try:
+            # 화살표 키들을 미리 정의된 명령 벡터에 매핑하여 로봇 내비게이션 제어
+            if key in _key_to_control:
+                velocity[0] += _key_to_control[key][0]
+                velocity[1] += _key_to_control[key][1]
+                print(f"  Keyboard : {key} >> Set Velocity : {velocity}")
+                need_update_vel = True
+            # 문자 키 처리 (s키로 정지)
+            elif hasattr(key, 'char') and key.char == 's':
+                velocity = [0.0, 0.0]
+                print(f"  Keyboard : {key.char} >> Set Velocity : {velocity}")
+                need_update_vel = True
+        except AttributeError:
+            if key == keyboard.Key.esc:
+                print("프로그램을 종료합니다...")
+                running = False
+                return False 
 
-    def _on_keyboard_event(event):
-        global velocity, need_update_vel
-        """Checks for a keyboard event and assign the corresponding command control depending on key pressed."""
-        if event.type in [carb.input.KeyboardEventType.KEY_PRESS, carb.input.KeyboardEventType.KEY_REPEAT]:
-            # Arrow keys map to pre-defined command vectors to control navigation of robot
-            if event.input.name in _key_to_control:
-                velocity[0] += _key_to_control[event.input.name][0]
-                velocity[1] += _key_to_control[event.input.name][1]
-                print(f"  Keybord : {event.input.name} >> Set Velocity : {velocity}")
-                need_update_vel = True
-            elif event.input.name == "S":
-                velocity = [0.0,0.0]
-                print(f"  Keybord : {event.input.name} >> Set Velocity : {velocity}")
-                need_update_vel = True
+    def on_key_release(key):
+        pass
 
 
 elif _robot == "unitree_g1":
     print("[ G1 Control Instructions ]")
     print(" ↑ : Move Forward")
-    print(" ↓ : Stop")
     print(" ← : Rotate Left")
     print(" → : Rotate Right")
+    print(" ↓ or None : Stop")
 
     _key_to_control = {
-        "UP": [0.5,0,0],
-        "DOWN": [0,0,0],
-        "LEFT": [0,0,1],
-        "RIGHT": [0,0,-1],
+        keyboard.Key.up: [0.5, 0, 0],
+        keyboard.Key.down: [0, 0, 0],
+        keyboard.Key.left: [0, 0, 1],
+        keyboard.Key.right: [0, 0, -1],
     }
 
     # Set up Keyboard
-    def _on_keyboard_event(event):
+    def on_key_press(key):
         global base_command
-        """Checks for a keyboard event and assign the corresponding command control depending on key pressed."""
-        if event.type == carb.input.KeyboardEventType.KEY_PRESS:
-            # Arrow keys map to pre-defined command vectors to control navigation of robot
-            if event.input.name in _key_to_control:
-                base_command = _key_to_control[event.input.name]
-                print(f"Keybord : {event.input.name}                    ")
-        # On key release, the robot stops moving
-        elif event.type == carb.input.KeyboardEventType.KEY_RELEASE:
-            base_command = _key_to_control["DOWN"]
+        if key in _key_to_control:
+            base_command = _key_to_control[key]
+            print(f"Keyboard : {key}                    ")
+
+    def on_key_release(key):
+        global base_command
+        if key in _key_to_control:
+            base_command = _key_to_control[keyboard.Key.down]
+        
+
 
 else:
     os.system("pgrep -f rviz | xargs -r kill -15")
     raise NotImplementedError()
 
-"""Sets up interface for keyboard input and registers the desired keys for control."""
-_input = carb.input.acquire_input_interface()
-_keyboard = omni.appwindow.get_default_app_window().get_keyboard()
-_sub_keyboard = _input.subscribe_to_keyboard_events(_keyboard, _on_keyboard_event)
+listener = keyboard.Listener(
+        on_press=on_key_press,
+        on_release=on_key_release
+    )
+listener.start()
 
 # 메인 루프
 tick = 0
-reset_needed = False
 need_update_vel = False
 
 trace_prim = robotPrimPath+"/base_footprint" if _robot == "turtlebot3_burger" else robotPrimPath+"/g1_minimal/torso_link"
@@ -684,19 +819,11 @@ print(f"Target tracing prim : {trace_prim}")
 
 world.play()
 while app.is_running():
-    if world.is_stopped() and not reset_needed:
-        reset_needed = True
-
     app.update()
     if tick != 0: tick = 0
 
     ## Real-time Syncronous Simulation
     while world.is_playing() and _sync_with_realtime:
-        if reset_needed:
-            world.reset()
-            if _robot == "turtlebot3_burger": my_controller.reset()
-            reset_needed = False
-
         if tick == 0:
             if _robot == "unitree_g1":
                 world.reset()
@@ -706,6 +833,9 @@ while app.is_running():
                     if g1:
                         g1.forward(step_size, base_command)
                 world.add_physics_callback("physics_step", callback_fn=on_physics_step)
+            elif _robot == "turtlebot3_burger":
+                world.reset()
+                my_controller.reset()
             now = perf_counter()
             next_physics_time = now + _physics_dt
             next_render_time = now + _render_dt
@@ -714,6 +844,7 @@ while app.is_running():
 
         while now > next_physics_time:
             world.step(render=False)
+            write_shm()
             next_physics_time += _physics_dt
             total_distance = distance_calculator.update_distance()
 
@@ -731,10 +862,6 @@ while app.is_running():
 
     ## Best Performance Simulation
     while world.is_playing() and not _sync_with_realtime:
-        if reset_needed:
-            world.reset()
-            if _robot == "turtlebot3_burger": my_controller.reset()
-            reset_needed = False
         if tick == 0:
             if _robot == "unitree_g1":
                 world.reset()
@@ -744,15 +871,20 @@ while app.is_running():
                     if g1:
                         g1.forward(step_size, base_command)
                 world.add_physics_callback("physics_step", callback_fn=on_physics_step)
+            elif _robot == "turtlebot3_burger":
+                world.reset()
+                my_controller.reset()
             now = perf_counter()
 
 
         world.step(render=False)
+        write_shm()
         total_distance = distance_calculator.update_distance()
-        
+
         if tick % _render_steps==0:
             world.render()
             print(f" Traveled distance: {total_distance:.3f} meters",end = "\r")
+
             if _sensor_settings["TfOdom"]: ros_tf_odom_graph.evaluate()
             
         if need_update_vel:

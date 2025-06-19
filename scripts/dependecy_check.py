@@ -1,5 +1,5 @@
 print("Checking python modules...")
-DEPENDENCY_LIST = ["numpy", "sysv_ipc"]
+DEPENDENCY_LIST = ["numpy", "sysv_ipc", "struct", "pynput"]
 import sys,subprocess
 
 

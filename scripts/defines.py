@@ -31,7 +31,7 @@ DISP_DEV_MEM    = 1<<13
 DISP_HOST_MEM   = 1<<14
 
 LAUNCH_CONFIG = {
-    "headless":True,
+    "headless":False,
     "fast_shutdown":True,
     "renderer":"RayTracedLighting",
     "multi_gpu":False,

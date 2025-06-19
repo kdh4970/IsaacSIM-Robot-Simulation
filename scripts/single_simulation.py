@@ -705,7 +705,7 @@ world.stop()
 import numpy as np
 if _robot == "turtlebot3_burger":
     my_controller.reset()
-    print("[ Tuetlebot Control Instructions ]")
+    print("[ Turtlebot Control Instructions ]")
     print(" ↑ : Increase linear velocity")
     print(" ↓ : Decrease linear velocity")
     print(" ← : Rotate Left")
@@ -782,7 +782,6 @@ _sub_keyboard = _input.subscribe_to_keyboard_events(_keyboard, _on_keyboard_even
 
 # 메인 루프
 tick = 0
-reset_needed = False
 need_update_vel = False
 
 trace_prim = robotPrimPath+"/base_footprint" if _robot == "turtlebot3_burger" else robotPrimPath+"/g1_minimal/torso_link"
@@ -791,19 +790,11 @@ print(f"Target tracing prim : {trace_prim}")
 
 world.play()
 while app.is_running():
-    if world.is_stopped() and not reset_needed:
-        reset_needed = True
-
     app.update()
     if tick != 0: tick = 0
 
     ## Real-time Syncronous Simulation
     while world.is_playing() and _sync_with_realtime:
-        if reset_needed:
-            world.reset()
-            if _robot == "turtlebot3_burger": my_controller.reset()
-            reset_needed = False
-
         if tick == 0:
             if _robot == "unitree_g1":
                 world.reset()
@@ -813,6 +804,9 @@ while app.is_running():
                     if g1:
                         g1.forward(step_size, base_command)
                 world.add_physics_callback("physics_step", callback_fn=on_physics_step)
+            elif _robot == "turtlebot3_burger":
+                world.reset()
+                my_controller.reset()
             now = perf_counter()
             next_physics_time = now + _physics_dt
             next_render_time = now + _render_dt
@@ -838,10 +832,6 @@ while app.is_running():
 
     ## Best Performance Simulation
     while world.is_playing() and not _sync_with_realtime:
-        if reset_needed:
-            world.reset()
-            if _robot == "turtlebot3_burger": my_controller.reset()
-            reset_needed = False
         if tick == 0:
             if _robot == "unitree_g1":
                 world.reset()
@@ -851,6 +841,9 @@ while app.is_running():
                     if g1:
                         g1.forward(step_size, base_command)
                 world.add_physics_callback("physics_step", callback_fn=on_physics_step)
+            elif _robot == "turtlebot3_burger":
+                world.reset()
+                my_controller.reset()
             now = perf_counter()
             next_physics_time = now + _physics_dt
             next_render_time = now + _render_dt

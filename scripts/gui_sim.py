@@ -43,6 +43,7 @@ if config is not None:
     _performance_mode = config.get('performance_mode')
     _physics_steps = config.get('physics_steps')
     _render_steps = config.get('render_steps')
+    _render_steps = 50
     _physics_dt = 1.0 / _physics_steps
     _render_dt = 1.0 / _render_steps
     # _sync_with_realtime = config.get('sync_with_realtime')
@@ -153,7 +154,22 @@ if _sensor_settings["Camera"]:
     
     camera_prim = UsdGeom.Camera(omni.usd.get_context().get_stage().DefinePrim(camera1_prim_path, "Camera"))
     xform_api = UsdGeom.XformCommonAPI(camera_prim)
-    xform_api.SetTranslate(Gf.Vec3d(0.0, 0.0, 1.0))
+    if _robot == "turtlebot3_burger":
+        if _env in ["Cave", "Office"]:
+            # xform_api.SetTranslate(Gf.Vec3d(0.03, 0.0, 0.16)) # this for 1x scale
+            xform_api.SetTranslate(Gf.Vec3d(0.06, 0.0, 0.32)) # this for 2x scale
+            # xform_api.SetTranslate(Gf.Vec3d(0.1, 0.0, 0.5)) # this for 3x scale
+        elif _env=="Rivermark":
+            xform_api.SetTranslate(Gf.Vec3d(0.0, 0.0, 0.13))
+        elif _env=="City":
+            xform_api.SetTranslate(Gf.Vec3d(0.06, 0.0, 0.32))
+        elif _env=="NVIDIA_City":
+            xform_api.SetTranslate(Gf.Vec3d(0.06, 0.0, 0.32))
+    elif _robot == "unitree_g1":
+        xform_api.SetTranslate(Gf.Vec3d(0.0, 0.0, 0.0))
+    else:
+        os.system("pgrep -f rviz | xargs -r kill -15")
+        raise NotImplementedError
     xform_api.SetRotate((90, 0, -90), UsdGeom.XformCommonAPI.RotationOrderXYZ)
     camera_prim.GetHorizontalApertureAttr().Set(21)
     camera_prim.GetVerticalApertureAttr().Set(16)
@@ -368,18 +384,18 @@ import carb.settings
 _settings = carb.settings.get_settings()
 # For Performance
 _settings.set_bool("/rtx/ecoMode/enabled", False) 
-_settings.set_bool("/rtx/directLighting/enabled", False) 
-_settings.set_bool("/rtx/indirectDiffuse/enabled", False) 
-_settings.set_bool("/rtx/ambientOcclusion/enabled", False) 
-_settings.set_bool("/rtx/reflections/enabled", False) 
-_settings.set_bool("/rtx/translucency/enabled", False) 
-_settings.set_bool("/rtx/post/histogram/enabled", False) 
+# _settings.set_bool("/rtx/directLighting/enabled", False) 
+# _settings.set_bool("/rtx/indirectDiffuse/enabled", False) 
+# _settings.set_bool("/rtx/ambientOcclusion/enabled", False) 
+# _settings.set_bool("/rtx/reflections/enabled", False) 
+# _settings.set_bool("/rtx/translucency/enabled", False) 
+# _settings.set_bool("/rtx/post/histogram/enabled", False) 
 
 # Brightness
-_settings.set_float("/rtx/sceneDb/ambientLightIntensity", 0.3)
-omni.kit.commands.execute('ChangeSetting',
-	path='/rtx/sceneDb/ambientLightColor',
-	value=[1.0, 1.0, 1.0])
+_settings.set_float("/rtx/sceneDb/ambientLightIntensity", 0.1)
+# omni.kit.commands.execute('ChangeSetting',
+# 	path='/rtx/sceneDb/ambientLightColor',
+# 	value=[1.0, 1.0, 1.0])
 
 
 
@@ -430,7 +446,7 @@ omni.kit.commands.execute('ChangeProperty',
 
 
 print_log("Setting shared memory...")
-import sysv_ipc,time
+import sysv_ipc, struct
 
 path = '/tmp/shared_data'
 if not os.path.exists(path):
@@ -451,7 +467,23 @@ except sysv_ipc.ExistentialError:
     print(f"Could not find shared memory. Key : {key}")
     exit()
 
+target_prim = stage.GetPrimAtPath(camera1_prim_path)
+shm_size = 48 if _sensor_settings["Camera2"] else 24
+print("Using 2 cameras. Second camera movement is not implemented.")
 
+def read_shm():
+    sem.acquire()
+    try:
+        raw_data = shm.read(shm_size) 
+        if _sensor_settings["Camera2"]:
+            data = list(struct.unpack('12f', raw_data))
+        else:
+            data = list(struct.unpack('6f', raw_data))
+        # print(f"reading data : {data}")
+        xform_api.SetTranslate(Gf.Vec3d(*data[0:3]))
+        xform_api.SetRotate(tuple(data[3:]), UsdGeom.XformCommonAPI.RotationOrderXYZ)
+    finally:
+        sem.release()
 
 print_log("\n\n     Simulator Ready!\n")
 world.reset()
@@ -486,9 +518,10 @@ while app.is_running():
         if tick == 0:
             next_render_time = now + _render_dt
 
-
+        
         if now > next_render_time:
-            world.step()
+            read_shm()
+            world.render()
             next_render_time += _render_dt
             
         tick += 1
@@ -500,8 +533,9 @@ while app.is_running():
         if reset_needed:
             world.reset()
             reset_needed = False
-        world.step()
-            
+        read_shm()
+        world.render()
+        
         tick += 1
         if tick > 1e8:
             tick = 1
