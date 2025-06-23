@@ -28,7 +28,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: PointCloud2
 Visualization Manager:
   Class: ""
   Displays:
@@ -67,8 +67,8 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 2.586954116821289
-        Min Value: -0.47150635719299316
+        Max Value: 2.669478178024292
+        Min Value: -0.5610631704330444
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -156,13 +156,52 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
+        base_footprint:
+          Value: false
+        base_link:
+          Value: true
+        camera_link:
+          Value: false
+        imu_link:
+          Value: false
+        lidar_link:
+          Value: false
+        odom:
+          Value: false
+        sensor_pack:
+          Value: false
+        sensors_link:
+          Value: false
+        wheel_left_link:
+          Value: false
+        wheel_right_link:
+          Value: false
+        world:
+          Value: true
       Marker Scale: 15
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        {}
+        world:
+          odom:
+            base_link:
+              base_footprint:
+                {}
+              sensor_pack:
+                camera_link:
+                  {}
+                imu_link:
+                  {}
+                lidar_link:
+                  {}
+                sensors_link:
+                  {}
+              wheel_left_link:
+                {}
+              wheel_right_link:
+                {}
       Update Interval: 0
       Value: true
     - Class: rviz_default_plugins/Image

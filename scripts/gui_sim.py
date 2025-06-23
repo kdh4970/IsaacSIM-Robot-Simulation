@@ -76,6 +76,10 @@ def print_log(text):
 from isaacsim import SimulationApp
 launch_config = defines.LAUNCH_CONFIG
 launch_config["headless"] = False
+launch_config["renderer_activeGpu"] = 0
+launch_config["renderer_raytracing_enabled"] = False
+launch_config["renderer_vulkan_enabled"] = False
+launch_config["rtx_realtime_mgpu_enabled"] = False
 app = SimulationApp(launch_config=launch_config)
 
 # Late import for Isaacsim & Omniverse API
@@ -349,8 +353,8 @@ if _sensor_settings["Camera"] and _sensor_settings["Camera2"]:
 #             "/Render/PostProcess/SDGPipeline/Isaac_03_PostProcessDispatchIsaacSimulationGate",
 #             "/Render/PostProcess/SDGPipeline/Isaac_04_PostProcessDispatchIsaacSimulationGate"
 #             ]
-#         for path,step in zip(lidar_gate_paths,lidar_steps):
-#             og.Controller.attribute(path+".inputs:step").set(step)
+#         for i in range(num_livox_parts):
+#             og.Controller.attribute(lidar_gate_paths[i]+".inputs:step").set(lidar_steps[_])
             
 
 #     else:
@@ -384,19 +388,26 @@ import carb.settings
 _settings = carb.settings.get_settings()
 # For Performance
 _settings.set_bool("/rtx/ecoMode/enabled", False) 
-# _settings.set_bool("/rtx/directLighting/enabled", False) 
-# _settings.set_bool("/rtx/indirectDiffuse/enabled", False) 
-# _settings.set_bool("/rtx/ambientOcclusion/enabled", False) 
-# _settings.set_bool("/rtx/reflections/enabled", False) 
-# _settings.set_bool("/rtx/translucency/enabled", False) 
-# _settings.set_bool("/rtx/post/histogram/enabled", False) 
+_settings.set_bool("/rtx/directLighting/enabled", False) 
+_settings.set_bool("/rtx/indirectDiffuse/enabled", False) 
+_settings.set_bool("/rtx/ambientOcclusion/enabled", False) 
+_settings.set_bool("/rtx/reflections/enabled", False) 
+_settings.set_bool("/rtx/translucency/enabled", False) 
+_settings.set_bool("/rtx/post/histogram/enabled", False) 
 
 # Brightness
-_settings.set_float("/rtx/sceneDb/ambientLightIntensity", 0.1)
+_settings.set_float("/rtx/sceneDb/ambientLightIntensity", 0.2)
 # omni.kit.commands.execute('ChangeSetting',
 # 	path='/rtx/sceneDb/ambientLightColor',
 # 	value=[1.0, 1.0, 1.0])
 
+# _settings.set_int("/renderer/activeGpu", 0) 
+# _settings.set_bool("/renderer/raytracing/enabled", False) 
+# _settings.set_bool("/renderer/vulkan/enabled", False) 
+
+# omni.kit.commands.execute('ChangeSetting',
+# 	path='/rtx/realtime/mgpu/enabled',
+# 	value=False)
 
 
 ## Configure Physics

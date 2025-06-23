@@ -87,6 +87,12 @@ def print_log(text):
 from isaacsim import SimulationApp
 launch_config = defines.LAUNCH_CONFIG
 launch_config["headless"] = True
+launch_config["renderer_activeGpu"] = 1
+launch_config["renderer_raytracing_enabled"] = False
+launch_config["renderer_vulkan_enabled"] = False
+launch_config["rtx_realtime_mgpu_enabled"] = False
+
+
 app = SimulationApp(launch_config=launch_config)
 
 # Late import for Isaacsim & Omniverse API
@@ -180,6 +186,7 @@ if _robot == "turtlebot3_burger":
             position=np.array(robotPosition),
         )
     )
+
     if _env == "Rivermark":
         my_controller = DifferentialController(name="simple_control", wheel_radius=0.25, wheel_base=1.6,max_linear_speed=2.0,max_angular_speed=1.0)
     else:
@@ -511,7 +518,7 @@ if _sensor_settings["Lidar"]:
         lidar_prims=[]
         lidar_render_products = []
         writers = []
-        num_livox_parts = 5
+        num_livox_parts = 4
         lidar_steps = [3,4,5,7,11]
 
         # Create parts of MID360
@@ -595,6 +602,13 @@ omni.kit.commands.execute('ChangeSetting',
 	path='/rtx/sceneDb/ambientLightColor',
 	value=[1.0, 1.0, 1.0])
 
+# _settings.set_int("/renderer/activeGpu", 1) 
+# _settings.set_bool("/renderer/raytracing/enabled", False) 
+# _settings.set_bool("/renderer/vulkan/enabled", False) 
+
+# omni.kit.commands.execute('ChangeSetting',
+# 	path='/rtx/realtime/mgpu/enabled',
+# 	value=False)
 
 
 ## Configure Physics
@@ -747,23 +761,19 @@ if _robot == "turtlebot3_burger":
 
     def on_key_press(key):
         global velocity, need_update_vel, running
-        """키보드 이벤트를 확인하고 눌린 키에 따라 해당 제어 명령을 할당합니다."""
         
         try:
-            # 화살표 키들을 미리 정의된 명령 벡터에 매핑하여 로봇 내비게이션 제어
             if key in _key_to_control:
                 velocity[0] += _key_to_control[key][0]
                 velocity[1] += _key_to_control[key][1]
                 print(f"  Keyboard : {key} >> Set Velocity : {velocity}")
                 need_update_vel = True
-            # 문자 키 처리 (s키로 정지)
             elif hasattr(key, 'char') and key.char == 's':
                 velocity = [0.0, 0.0]
                 print(f"  Keyboard : {key.char} >> Set Velocity : {velocity}")
                 need_update_vel = True
         except AttributeError:
             if key == keyboard.Key.esc:
-                print("프로그램을 종료합니다...")
                 running = False
                 return False 
 

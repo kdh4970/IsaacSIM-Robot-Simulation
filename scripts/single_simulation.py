@@ -163,6 +163,8 @@ if _robot == "turtlebot3_burger":
             position=np.array(robotPosition),
         )
     )
+    stage.GetPrimAtPath(robotPrimPath).GetAttribute("xformOp:scale").Set((10,10,10))
+    
     if _env == "Rivermark":
         my_controller = DifferentialController(name="simple_control", wheel_radius=0.25, wheel_base=1.6,max_linear_speed=2.0,max_angular_speed=1.0)
     else:
