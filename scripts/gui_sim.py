@@ -457,7 +457,7 @@ omni.kit.commands.execute('ChangeProperty',
 
 
 print_log("Setting shared memory...")
-import sysv_ipc, struct
+import sysv_ipc, struct                              
 
 path = '/tmp/shared_data'
 if not os.path.exists(path):
@@ -479,8 +479,11 @@ except sysv_ipc.ExistentialError:
     exit()
 
 target_prim = stage.GetPrimAtPath(camera1_prim_path)
-shm_size = 48 if _sensor_settings["Camera2"] else 24
-print("Using 2 cameras. Second camera movement is not implemented.")
+if _sensor_settings["Camera2"]:
+    shm_size = 48
+    print("Using 2 cameras. Second camera movement is not implemented.")
+else:
+    shm_size = 24
 
 def read_shm():
     sem.acquire()

@@ -13,5 +13,5 @@
         "DebugLidar": false,
         "TfOdom": false
     },
-    "lidar_model": "OS0_REV6_64ch30hz1024res"
+    "lidar_model": "Livox_MID360"
 }

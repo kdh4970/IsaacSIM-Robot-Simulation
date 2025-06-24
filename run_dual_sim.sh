@@ -5,7 +5,7 @@ wd=$PWD
 # Find ROS and Launch Rviz2
 rviz_config="./config/config.rviz"
 ros_path1="/opt/ros/humble/local_setup.zsh"
-ros_path2="$HOME/ros2_humble/install/local_setup.zsh"
+ros_path2="$HOME/ros2_humble/install/local_setup.bash"
 if  [ -f "$ros_path1" ]; then
 	nohup zsh -c "source $ros_path1; rviz2 -d $rviz_config" > rviz.log 2>&1 &
 	rviz_pid=$!
@@ -40,7 +40,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$isaacsim_path/exts/isaacsim.ros2.bridge
 cd $isaacsim_path
 $isaacsim_path/python.sh $wd/scripts/dependecy_check.py
 $isaacsim_path/python.sh $wd/scripts/preset_selector.py
-gnome-terminal -- bash -c "cd $isaacsim_path; export CUDA_VISIBLE_DEVICES=0;$isaacsim_path/python.sh $wd/scripts/headless_sim.py; exec bash" &
+gnome-terminal -- bash -c "cd $isaacsim_path; export CUDA_VISIBLE_DEVICES=1;$isaacsim_path/python.sh $wd/scripts/headless_sim.py; exec bash" &
 headless_pid=$!
 echo "Launching IsaacSIM headless...    PID : $headless_pid" 
 sleep 20
