@@ -130,7 +130,6 @@ app.update()
 ## Robot
 
 print_log(f"Creating robot at {robotPrimPath}...")
-world = World(stage_units_in_meters=1.0)
 if _robot == "turtlebot3_burger":
     from isaacsim.robot.wheeled_robots.robots import WheeledRobot
     from isaacsim.robot.wheeled_robots.controllers.differential_controller import DifferentialController
@@ -256,7 +255,7 @@ if _sensor_settings["Camera"]:
             xform_api.SetTranslate(Gf.Vec3d(0.06, 0.0, 0.32)) # this for 2x scale
             # xform_api.SetTranslate(Gf.Vec3d(0.1, 0.0, 0.5)) # this for 3x scale
         elif _env=="Rivermark":
-            xform_api.SetTranslate(Gf.Vec3d(0.0, 0.0, 0.13))
+            xform_api.SetTranslate(Gf.Vec3d(-0.5, 0.0, 0.13))
         elif _env=="City":
             xform_api.SetTranslate(Gf.Vec3d(0.06, 0.0, 0.32))
         elif _env=="NVIDIA_City":

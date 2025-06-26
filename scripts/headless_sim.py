@@ -87,13 +87,12 @@ def print_log(text):
 from isaacsim import SimulationApp
 launch_config = defines.LAUNCH_CONFIG
 launch_config["headless"] = True
-launch_config["renderer_activeGpu"] = 1
-launch_config["renderer_raytracing_enabled"] = False
-launch_config["renderer_vulkan_enabled"] = False
+launch_config["multi_gpu"] = False
 launch_config["rtx_realtime_mgpu_enabled"] = False
 
 
 app = SimulationApp(launch_config=launch_config)
+
 
 # Late import for Isaacsim & Omniverse API
 import omni
@@ -133,11 +132,6 @@ else:
     )
 stage = omni.usd.get_context().get_stage()
 
-# from omni.kit.menu.stage.content_browser_options import ContentBrowserOptions
-# #url = "/home/do/Downloads/office.usd"
-# url = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Environments/Office/office.usd"
-# ContentBrowserOptions._add_file_to_stage(url, _settings, False)
-
 app.update()
 
 
@@ -150,9 +144,6 @@ if _env=="Cave":  # Change stage lighting to camera lighting.
 
 from isaacsim.core.api import World
 world = World(stage_units_in_meters=1.0,physics_dt=_physics_dt,rendering_dt=_render_dt)
-# simulation_context = SimulationContext(stage_units_in_meters=1.0,set_defaults=False)
-# simulation_context.set_simulation_dt(physics_dt=_physics_dt,rendering_dt=_render_dt)
-
 
 
 app.update()
@@ -160,7 +151,6 @@ app.update()
 ## Robot
 
 print_log(f"Creating robot at {robotPrimPath}...")
-world = World(stage_units_in_meters=1.0)
 if _robot == "turtlebot3_burger":
     from isaacsim.robot.wheeled_robots.robots import WheeledRobot
     from isaacsim.robot.wheeled_robots.controllers.differential_controller import DifferentialController
@@ -326,53 +316,6 @@ app.update()
 
 # Creating an on-demand push graph with cameraHelper nodes to generate ROS image publishers
 keys = og.Controller.Keys
-# if _sensor_settings["Camera"]:
-#     cameraNodeGraph_mono = {
-#             keys.CREATE_NODES: [
-#                 ("OnTick", "omni.graph.action.OnTick"),
-#                 ("createViewport", "isaacsim.core.nodes.IsaacCreateViewport"),
-#                 ("getRenderProduct", "isaacsim.core.nodes.IsaacGetViewportRenderProduct"),
-#                 ("setCamera", "isaacsim.core.nodes.IsaacSetCameraOnRenderProduct"),
-#                 ("cameraHelperRgb", "isaacsim.ros2.bridge.ROS2CameraHelper"),
-#                 ("cameraHelperInfo", "isaacsim.ros2.bridge.ROS2CameraInfoHelper"),
-#                 ("cameraHelperDepth", "isaacsim.ros2.bridge.ROS2CameraHelper"),
-#             ],
-#             keys.CONNECT: [
-#                 ("OnTick.outputs:tick", "createViewport.inputs:execIn"),
-#                 ("createViewport.outputs:execOut", "getRenderProduct.inputs:execIn"),
-#                 ("createViewport.outputs:viewport", "getRenderProduct.inputs:viewport"),
-#                 ("getRenderProduct.outputs:execOut", "setCamera.inputs:execIn"),
-#                 ("getRenderProduct.outputs:renderProductPath", "setCamera.inputs:renderProductPath"),
-#                 ("setCamera.outputs:execOut", "cameraHelperRgb.inputs:execIn"),
-#                 ("setCamera.outputs:execOut", "cameraHelperInfo.inputs:execIn"),
-#                 ("setCamera.outputs:execOut", "cameraHelperDepth.inputs:execIn"),
-#                 ("getRenderProduct.outputs:renderProductPath", "cameraHelperRgb.inputs:renderProductPath"),
-#                 ("getRenderProduct.outputs:renderProductPath", "cameraHelperInfo.inputs:renderProductPath"),
-#                 ("getRenderProduct.outputs:renderProductPath", "cameraHelperDepth.inputs:renderProductPath"),
-#             ],
-#             keys.SET_VALUES: [
-#                 ("createViewport.inputs:viewportId", 0),
-#                 ("cameraHelperRgb.inputs:frameId", "camera_link"),
-#                 ("cameraHelperRgb.inputs:topicName", "rgb0"),
-#                 ("cameraHelperRgb.inputs:type", "rgb"),
-#                 ("cameraHelperInfo.inputs:frameId", "camera_link"),
-#                 ("cameraHelperInfo.inputs:topicName", "camera_info"),
-#                 ("cameraHelperDepth.inputs:frameId", "camera_link"),
-#                 ("cameraHelperDepth.inputs:topicName", "depth0"),
-#                 ("cameraHelperDepth.inputs:type", "depth"),
-#                 ("setCamera.inputs:cameraPrim", [usdrt.Sdf.Path(camera1_prim_path)]),
-#             ],
-#         }
-    
-#     (ros_camera_graph, _, _, _) = og.Controller.edit(
-#         {
-#             "graph_path": defines.ROS_CAMERA_GRAPH_PATH,
-#             "evaluator_name": "push",
-#             "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_SIMULATION,
-#         },
-#         cameraNodeGraph_mono,
-#     )
-
 if _sensor_settings["Imu"]:
     
     (ros_imu_graph, _, _, _) = og.Controller.edit(
@@ -489,18 +432,7 @@ if _sensor_settings["TfOdom"]:
         },
     )
 
-# if _sensor_settings["Camera"]: og.Controller.evaluate_sync(ros_camera_graph)
-
 app.update()
-
-
-# Lidar : /Render/PostProcess/SDGPipeline/Isaac_PostProcessDispatchIsaacSimulationGate
-# Rgb : /Render/PostProcess/SDGPipeline/omni_kit_widget_viewport_ViewportTexture_0_LdrColorSDIsaacSimulationGate
-# Camerainfo : /Render/PostProcess/SDGPipeline/omni_kit_widget_viewport_ViewportTexture_0_PostProcessDispatchIsaacSimulationGate
-
-
-# Need to initialize physics getting any articulation..etc
-# simulation_context.initialize_physics()
 
 
 if _sensor_settings["Lidar"]:
@@ -602,13 +534,6 @@ omni.kit.commands.execute('ChangeSetting',
 	path='/rtx/sceneDb/ambientLightColor',
 	value=[1.0, 1.0, 1.0])
 
-# _settings.set_int("/renderer/activeGpu", 1) 
-# _settings.set_bool("/renderer/raytracing/enabled", False) 
-# _settings.set_bool("/renderer/vulkan/enabled", False) 
-
-# omni.kit.commands.execute('ChangeSetting',
-# 	path='/rtx/realtime/mgpu/enabled',
-# 	value=False)
 
 
 ## Configure Physics

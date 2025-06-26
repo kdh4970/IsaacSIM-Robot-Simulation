@@ -76,9 +76,7 @@ def print_log(text):
 from isaacsim import SimulationApp
 launch_config = defines.LAUNCH_CONFIG
 launch_config["headless"] = False
-launch_config["renderer_activeGpu"] = 0
-launch_config["renderer_raytracing_enabled"] = False
-launch_config["renderer_vulkan_enabled"] = False
+launch_config["multi_gpu"] = False
 launch_config["rtx_realtime_mgpu_enabled"] = False
 app = SimulationApp(launch_config=launch_config)
 
@@ -120,12 +118,6 @@ else:
         prim_path="/World/env"
     )
 stage = omni.usd.get_context().get_stage()
-
-# from omni.kit.menu.stage.content_browser_options import ContentBrowserOptions
-# #url = "/home/do/Downloads/office.usd"
-# url = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Environments/Office/office.usd"
-# ContentBrowserOptions._add_file_to_stage(url, _settings, False)
-
 app.update()
 
 
@@ -138,8 +130,6 @@ if _env=="Cave":  # Change stage lighting to camera lighting.
 
 from isaacsim.core.api import World
 world = World(stage_units_in_meters=1.0,physics_dt=_physics_dt,rendering_dt=_render_dt)
-# simulation_context = SimulationContext(stage_units_in_meters=1.0,set_defaults=False)
-# simulation_context.set_simulation_dt(physics_dt=_physics_dt,rendering_dt=_render_dt)
 
 
 
@@ -401,13 +391,6 @@ _settings.set_float("/rtx/sceneDb/ambientLightIntensity", 0.2)
 # 	path='/rtx/sceneDb/ambientLightColor',
 # 	value=[1.0, 1.0, 1.0])
 
-# _settings.set_int("/renderer/activeGpu", 0) 
-# _settings.set_bool("/renderer/raytracing/enabled", False) 
-# _settings.set_bool("/renderer/vulkan/enabled", False) 
-
-# omni.kit.commands.execute('ChangeSetting',
-# 	path='/rtx/realtime/mgpu/enabled',
-# 	value=False)
 
 
 ## Configure Physics
