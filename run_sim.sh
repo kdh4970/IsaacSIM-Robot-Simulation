@@ -1,12 +1,11 @@
-#!/bin/zsh
-# Change all 'zsh' to 'bash' if you use bash shell.
+#!/bin/bash
 
 wd=$PWD
 
 # Find ROS and Launch Rviz2
 rviz_config="./rviz_config/config.rviz"
-ros_path1="/opt/ros/humble/local_setup.zsh"
-ros_path2="$HOME/ros2_humble/install/local_setup.zsh"
+ros_path1="/opt/ros/humble/local_setup.bash"
+ros_path2="$HOME/ros2_humble/install/local_setup.bash"
 if  [ -f "$ros_path1" ]; then
 	nohup zsh -c "source $ros_path1; rviz2 -d $rviz_config" > rviz.log 2>&1 &
 elif [ -f "$ros_path2" ]; then
