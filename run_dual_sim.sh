@@ -40,12 +40,12 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$isaacsim_path/exts/isaacsim.ros2.bridge
 cd $isaacsim_path
 $isaacsim_path/python.sh $wd/scripts/dependecy_check.py
 $isaacsim_path/python.sh $wd/scripts/preset_selector.py
-gnome-terminal -- bash -c "cd $isaacsim_path; export CUDA_VISIBLE_DEVICES=1;$isaacsim_path/python.sh $wd/scripts/headless_sim.py; exec bash" &
+gnome-terminal -- bash -c "cd $isaacsim_path;$isaacsim_path/python.sh $wd/scripts/headless_sim.py; exec bash" &
 headless_pid=$!
 echo "Launching IsaacSIM headless...    PID : $headless_pid" 
 sleep 20
 
-gnome-terminal -- bash -c "cd $isaacsim_path; export CUDA_VISIBLE_DEVICES=0;$isaacsim_path/python.sh $wd/scripts/gui_sim.py; exec bash" &
+gnome-terminal -- bash -c "cd $isaacsim_path;$isaacsim_path/python.sh $wd/scripts/gui_sim.py; exec bash" &
 gui_pid=$!
 echo "Launching IsaacSIM GUI...         PID : $gui_pid"
 echo ""
@@ -55,19 +55,16 @@ while true; do
     if [ "$key" = "q" ]; then
         echo ""
         echo "Terminating processes..."
-        
-        # RViz2 프로세스 종료
+
         if [ ! -z "$rviz_pid" ]; then
             kill $rviz_pid 2>/dev/null
         fi
         pkill -f "rviz2" 2>/dev/null
         
-        # IsaacSim 프로세스들 종료
         pkill -f "headless_sim.py" 2>/dev/null
         pkill -f "gui_sim.py" 2>/dev/null
         pkill -f "python.sh" 2>/dev/null
         
-        # gnome-terminal 프로세스들 정리
         if [ ! -z "$headless_pid" ]; then
             kill $headless_pid 2>/dev/null
         fi
@@ -75,7 +72,6 @@ while true; do
             kill $gui_pid 2>/dev/null
         fi
         
-        # 공유메모리 및 세마포어 정리
         echo "Cleaning up IPC resources..."
         ipcrm -M 1000 2>/dev/null
         ipcrm -S 1001 2>/dev/null

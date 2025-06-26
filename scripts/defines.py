@@ -4,8 +4,8 @@ ROBOTS = ["turtlebot3_burger", "unitree_g1"]
 
 USD_PATH = {
     ENVS[0]: "/usd_scenes/Cave/cave_only.usd",
-    ENVS[1]: "/usd_scenes/Collected_office/office.usd",
-    ENVS[2]: "/usd_scenes/Outdoor/Rivermark/rivermark_simple_flattened.usd",
+    ENVS[1]: "/usd_scenes/office.usd",
+    ENVS[2]: "/usd_scenes/rivermark_modified.usd",
     ENVS[3]: "/usd_scenes/Full_Gameready_City_Buildings/city_turtlebot_simplified.usd",
     ENVS[4]: "/usd_scenes/AECO_CityDemoPack_NVD@10011/Demos/AEC/TowerDemo/CityDemopack/World_CityDemopack_turtlebot.usd"
 }

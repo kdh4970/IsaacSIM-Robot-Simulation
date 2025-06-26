@@ -43,7 +43,7 @@ This project was conducted on below environments.
 
 ### 0. Before Run.  
 
-Install IsaacSIM 4.5.0 and ROS2.  
+Install nvidia graphic driver, IsaacSIM 4.5.0 and ROS2.  
 
 ### 1. Clone this Repo and Submodule  
 ```
@@ -51,16 +51,20 @@ git clone --recursive https://github.com/kdh4970/IsaacSIM-Robot-Simulation.git
 ```
 
 ### 2. Edit Script  
-Change below things in run_sim.sh file.  
- - If isaacsim path is not "~/isaacsim", change it manually.  
- - Check your ROS path.  
+Change below things in *run_single_sim.sh* and *run_dual_sim.sh* file.  
+ - Check IsaacSIM path. (default : ~/isaacsim)
+ - Check ROS2 path.  
 
-### 3. Unzip Scenes  
-Unzip scene datas in usd_scenes directory.  
+### 3. Get USD Scenes  
+1. Unzip scene datas in usd_scenes directory.  
+2. You can download *Office* and *Outdoor-Rivermark* scenes from NVIDIA IsaacSIM Assets.  
+Direct Download Link : https://download.isaacsim.omniverse.nvidia.com/isaac-sim-assets-1%404.5.0-rc.36%2Brelease.19112.f59b3005.zip
+3. Extract */Assets/Isaac/4.5/Isaac/Environments/Office* and */Assets/Isaac/4.5/Isaac/Environments/Outdoor* in zip file.  
+4. Move *Office* and *Outdoor* to "IsaacSIM-Robot-Simulation/usd_scenes" direfctory.
 
 ### 4. Lidar Configs  
-Move "lidar_configs" directory to "isaacsim/exts/isaacsim.sensors.rtx/data/lidar_configs".  
-Replace "extension.toml" to "isaacsim/exts/isaacsim.sensors.rtx/config/extension.toml".  
+Move "lidar_configs" directory to "$isaacsim_path/exts/isaacsim.sensors.rtx/data/lidar_configs".  
+Replace "extension.toml" to "$isaacsim_path/exts/isaacsim.sensors.rtx/config/extension.toml".  
 
 Tested lidar models.  
  * OS0_REV6_128ch30hz1024res  
@@ -71,10 +75,20 @@ Tested lidar models.
 
 ### 5. Start Simulation  
 
+#### Single Simulation : Launch single isaacsim which performs physics and render.
+
 ```
 cd IsaacSIM-Robot-Simulation
-./run-sim.sh
+./run_single_sim.sh
 ```
+
+#### (Unstable) Dual Simulation : Launch two isaacsim. (headless_sim and gui_sim)
+It may cause GPU crash error.
+```
+cd IsaacSIM-Robot-Simulation
+./run_dual_sim.sh
+```
+
 
 ## Demo
 

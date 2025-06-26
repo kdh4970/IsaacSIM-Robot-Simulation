@@ -3,7 +3,6 @@
 wd=$PWD
 
 # Find ROS and Launch Rviz2
-
 rviz_config="./config/config.rviz"
 ros_path1="/opt/ros/humble/local_setup.bash"
 ros_path2="$HOME/ros2_humble/install/local_setup.bash"

@@ -109,11 +109,6 @@ else:
     )
 stage = omni.usd.get_context().get_stage()
 
-# from omni.kit.menu.stage.content_browser_options import ContentBrowserOptions
-# #url = "/home/do/Downloads/office.usd"
-# url = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.5/Isaac/Environments/Office/office.usd"
-# ContentBrowserOptions._add_file_to_stage(url, _settings, False)
-
 app.update()
 
 
@@ -126,8 +121,6 @@ if _env=="Cave":  # Change stage lighting to camera lighting.
 
 from isaacsim.core.api import World
 world = World(stage_units_in_meters=1.0,physics_dt=_physics_dt,rendering_dt=_render_dt)
-# simulation_context = SimulationContext(stage_units_in_meters=1.0,set_defaults=False)
-# simulation_context.set_simulation_dt(physics_dt=_physics_dt,rendering_dt=_render_dt)
 
 
 
@@ -163,9 +156,9 @@ if _robot == "turtlebot3_burger":
             position=np.array(robotPosition),
         )
     )
-    stage.GetPrimAtPath(robotPrimPath).GetAttribute("xformOp:scale").Set((10,10,10))
     
     if _env == "Rivermark":
+        stage.GetPrimAtPath(robotPrimPath).GetAttribute("xformOp:scale").Set((10,10,10))
         my_controller = DifferentialController(name="simple_control", wheel_radius=0.25, wheel_base=1.6,max_linear_speed=2.0,max_angular_speed=1.0)
     else:
         my_controller = DifferentialController(name="simple_control", wheel_radius=0.025, wheel_base=0.16,max_linear_speed=1.5,max_angular_speed=1.0)
@@ -628,7 +621,8 @@ if _sensor_settings["Lidar"]:
         lidar_gate_path = "/Render/PostProcess/SDGPipeline/Isaac_PostProcessDispatchIsaacSimulationGate"
         lidar_step_size = 3
         og.Controller.attribute(lidar_gate_path+".inputs:step").set(lidar_step_size)
-            # Change Settings
+
+# Change Settings
 import carb
 import carb.settings
 _settings = carb.settings.get_settings()
