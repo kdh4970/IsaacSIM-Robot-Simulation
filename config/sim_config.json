@@ -1,0 +1,17 @@
+{
+    "environment": "Office",
+    "robot": "unitree_g1",
+    "performance_mode": "Best performance",
+    "physics_steps": 100,
+    "render_steps": 30,
+    "sync_with_realtime": false,
+    "sensor_settings": {
+        "Camera": true,
+        "Camera2": false,
+        "Imu": true,
+        "Lidar": true,
+        "DebugLidar": false,
+        "TfOdom": false
+    },
+    "lidar_model": "Livox_MID360"
+}
