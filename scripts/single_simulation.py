@@ -256,8 +256,8 @@ if _sensor_settings["Camera"]:
             # xform_api.SetTranslate(Gf.Vec3d(0.1, 0.0, 0.5)) # this for 3x scale
         elif _env=="Rivermark":
             xform_api.SetTranslate(Gf.Vec3d(0.0, 0.0, 0.13))
-        elif _env=="City":
-            xform_api.SetTranslate(Gf.Vec3d(0.06, 0.0, 0.32))
+        elif _env=="GameReady City":
+            xform_api.SetTranslate(Gf.Vec3d(0.06, 0.0, 0.5))
         elif _env=="NVIDIA_City":
             xform_api.SetTranslate(Gf.Vec3d(0.06, 0.0, 0.32))
     elif _robot == "unitree_g1":
