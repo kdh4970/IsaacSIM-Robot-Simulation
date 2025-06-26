@@ -494,25 +494,17 @@ world.stop()
 
 # 메인 루프
 tick = 0
-reset_needed = False
-need_update_vel = False
 
 world.play()
 while app.is_running():
-    if world.is_stopped() and not reset_needed:
-        reset_needed = True
 
     app.update()
-    if tick != 0: tick = 0
+    next_render_time = 0
 
     ## Real-time Syncronous Simulation
     while world.is_playing() and _sync_with_realtime:
-        if reset_needed:
-            world.reset()
-            reset_needed = False
-
         now = perf_counter()
-        if tick == 0:
+        if next_render_time == 0:
             next_render_time = now + _render_dt
 
         
@@ -521,21 +513,12 @@ while app.is_running():
             world.render()
             next_render_time += _render_dt
             
-        tick += 1
-        if tick > 1e8:
-            tick = 1
 
     ## Best Performance Simulation
     while world.is_playing() and not _sync_with_realtime:
-        if reset_needed:
-            world.reset()
-            reset_needed = False
         read_shm()
         world.render()
         
-        tick += 1
-        if tick > 1e8:
-            tick = 1
 
 world.stop()
 app.close()

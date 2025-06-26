@@ -60,7 +60,7 @@ Change below things in *run_single_sim.sh* and *run_dual_sim.sh* file.
 2. You can download *Office* and *Outdoor-Rivermark* scenes from NVIDIA IsaacSIM Assets.  
 Direct Download Link : https://download.isaacsim.omniverse.nvidia.com/isaac-sim-assets-1%404.5.0-rc.36%2Brelease.19112.f59b3005.zip
 3. Extract */Assets/Isaac/4.5/Isaac/Environments/Office* and */Assets/Isaac/4.5/Isaac/Environments/Outdoor* in zip file.  
-4. Move *Office* and *Outdoor* to "IsaacSIM-Robot-Simulation/usd_scenes" direfctory.
+4. Move *Office* and *Outdoor* to "IsaacSIM-Robot-Simulation/usd_scenes" directory.
 
 ### 4. Lidar Configs  
 Move "lidar_configs" directory to "$isaacsim_path/exts/isaacsim.sensors.rtx/data/lidar_configs".  

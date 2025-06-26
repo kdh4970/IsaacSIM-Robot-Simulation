@@ -40,12 +40,15 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$isaacsim_path/exts/isaacsim.ros2.bridge
 cd $isaacsim_path
 $isaacsim_path/python.sh $wd/scripts/dependecy_check.py
 $isaacsim_path/python.sh $wd/scripts/preset_selector.py
-gnome-terminal -- bash -c "cd $isaacsim_path;$isaacsim_path/python.sh $wd/scripts/headless_sim.py; exec bash" &
+
+## Run headless sim and gui sim on separate GPUs
+gnome-terminal -- bash -c "cd $isaacsim_path; export CUDA_VISIBLE_DEVICES=1;$isaacsim_path/python.sh $wd/scripts/headless_sim.py; exec bash" &
 headless_pid=$!
 echo "Launching IsaacSIM headless...    PID : $headless_pid" 
 sleep 20
 
-gnome-terminal -- bash -c "cd $isaacsim_path;$isaacsim_path/python.sh $wd/scripts/gui_sim.py; exec bash" &
+## GUI SIM : CUDA_VISIBLE_DEVICES must be set to $DISPLAY value.
+gnome-terminal -- bash -c "cd $isaacsim_path; export CUDA_VISIBLE_DEVICES=0;$isaacsim_path/python.sh $wd/scripts/gui_sim.py; exec bash" &
 gui_pid=$!
 echo "Launching IsaacSIM GUI...         PID : $gui_pid"
 echo ""

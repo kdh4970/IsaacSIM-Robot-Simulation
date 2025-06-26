@@ -67,7 +67,7 @@ if _robot == "turtlebot3_burger":
     sensorPackPrimPath = robotPrimPath + "/base_footprint/base_link/sensor_pack"
 elif _robot == "unitree_g1":
     if _env == "Rivermark":
-        robotPosition = [0.0,0.0,6.5]
+        robotPosition = [-0.5,0.0,6.5]
     else:
         robotPosition = [0.0,0.0,0.76]
 else:
@@ -178,6 +178,7 @@ if _robot == "turtlebot3_burger":
     )
 
     if _env == "Rivermark":
+        stage.GetPrimAtPath(robotPrimPath).GetAttribute("xformOp:scale").Set((10,10,10))
         my_controller = DifferentialController(name="simple_control", wheel_radius=0.25, wheel_base=1.6,max_linear_speed=2.0,max_angular_speed=1.0)
     else:
         my_controller = DifferentialController(name="simple_control", wheel_radius=0.025, wheel_base=0.16,max_linear_speed=1.5,max_angular_speed=1.0)
@@ -766,7 +767,10 @@ while app.is_running():
                 
                 def on_physics_step(step_size):
                     if g1:
-                        g1.forward(step_size, base_command)
+                        try:
+                            g1.forward(step_size, base_command)
+                        except Exception as e:
+                            print(e)
                 world.add_physics_callback("physics_step", callback_fn=on_physics_step)
             elif _robot == "turtlebot3_burger":
                 world.reset()
@@ -804,7 +808,10 @@ while app.is_running():
                 
                 def on_physics_step(step_size):
                     if g1:
-                        g1.forward(step_size, base_command)
+                        try:
+                            g1.forward(step_size, base_command)
+                        except Exception as e:
+                            print(e)
                 world.add_physics_callback("physics_step", callback_fn=on_physics_step)
             elif _robot == "turtlebot3_burger":
                 world.reset()
@@ -824,8 +831,11 @@ while app.is_running():
             
         if need_update_vel:
             need_update_vel = False
-            if _robot == "turtlebot3_burger": robot_prim.apply_wheel_actions(my_controller.forward(command=velocity))
-
+            if _robot == "turtlebot3_burger": 
+                try:
+                    robot_prim.apply_wheel_actions(my_controller.forward(command=velocity))
+                except Exception as e:
+                    print(e)
         tick += 1
         if tick > 1e8:
             tick = 1
