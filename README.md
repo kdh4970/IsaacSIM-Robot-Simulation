@@ -7,7 +7,6 @@ Navigation and Sensor Data Logging of a Mobile Robot in an Isaac Sim-Based Virtu
 1. You can control the robot by using keyboard "UP", "DOWN", "LEFT", "RIGHT".  
 2. Sensor data of enabled sensors will be published into ROS2 topic automatically.  
 
-
 Robots : 
  * UGV : turtlebot3_burger  
  * UAV : Not implemented  
@@ -23,13 +22,15 @@ Scenes :
 Simulation :  
  * Physics rate : 100 Hz  
  * Render rate : 30 Hz  
- * This is default preset. You can change it by changing defines.PHYSICS_DT and defines.RENDER_DT.  
- * If you set defines.ENABLE_REALTIME_SYNC to False, Simulation will be perfomed with best performance.
 
 Sensors and rates :   
  * Camera : 30 Hz RGBD  (depend on Render)
  * IMU : 100 Hz (depend on Physics)
  * Lidar : 10Hz Ouster and Livox  (depend on Render, downsampled)
+
+## Not Implemented Features  
+Unitree G1 - TF and Odom
+Dual Sim - mono camera
 
 ## Dependencies  
 
