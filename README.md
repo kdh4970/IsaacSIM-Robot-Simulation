@@ -83,12 +83,19 @@ cd IsaacSIM-Robot-Simulation
 ./run_single_sim.sh
 ```
 
+Before control the robot, click IsaacSIM GUI once.  
+Then, you can control the robot by using keyboard. (Up, Down, Right, Left)  
+
+
 #### (Unstable) Dual Simulation : Launch two isaacsim. (headless_sim and gui_sim)
 It may cause GPU crash error.
 ```
 cd IsaacSIM-Robot-Simulation
 ./run_dual_sim.sh
 ```
+
+Before control the robot, click Headless sim console once.  
+Then, you can control the robot by using keyboard. (Up, Down, Right, Left)  
 
 
 ## Demo
