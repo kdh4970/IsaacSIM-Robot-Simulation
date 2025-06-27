@@ -57,6 +57,7 @@ elif _robot == "unitree_g1":
 else:
     os.system("pgrep -f rviz | xargs -r kill -15")
     raise NotImplementedError
+
 #############################################
 ###                                       ###
 ###          1. App Initalization         ###
@@ -108,9 +109,7 @@ else:
         prim_path="/World/env"
     )
 stage = omni.usd.get_context().get_stage()
-
 app.update()
-
 
 if _env=="Cave":  # Change stage lighting to camera lighting.
     action_registry = omni.kit.actions.core.get_action_registry()
@@ -118,24 +117,17 @@ if _env=="Cave":  # Change stage lighting to camera lighting.
     action.execute()
     app.update()
 
-
 from isaacsim.core.api import World
 world = World(stage_units_in_meters=1.0,physics_dt=_physics_dt,rendering_dt=_render_dt)
-
-
-
 app.update()
 
-
 ## Robot
-
 print_log(f"Creating robot at {robotPrimPath}...")
 if _robot == "turtlebot3_burger":
     from isaacsim.robot.wheeled_robots.robots import WheeledRobot
     from isaacsim.robot.wheeled_robots.controllers.differential_controller import DifferentialController
     from isaacsim.storage.native import get_assets_root_path
     from isaacsim.core.utils.prims import is_prim_path_valid
-
     asset_path = get_assets_root_path() + "/Isaac/Robots/Turtlebot/turtlebot3_burger.usd"
     
     for _ in defines.ROBOTS:
@@ -155,7 +147,6 @@ if _robot == "turtlebot3_burger":
             position=np.array(robotPosition),
         )
     )
-    
     if _env == "Rivermark":
         stage.GetPrimAtPath(robotPrimPath).GetAttribute("xformOp:scale").Set((10,10,10))
         my_controller = DifferentialController(name="simple_control", wheel_radius=0.25, wheel_base=1.6,max_linear_speed=2.0,max_angular_speed=1.0)
@@ -169,7 +160,6 @@ if _robot == "turtlebot3_burger":
     for prim in stage.Traverse():
         if prim.GetName() == target_name:
             found_prims.append(prim.GetPath())
-
     if found_prims:
         print_log(f"\n\n     Prims named '{target_name}' found at paths:")
         for path in found_prims:
@@ -182,7 +172,6 @@ if _robot == "turtlebot3_burger":
                     paths_to_move={path: sensorPackPrimPath},
                     keep_world_transform=False,
                     destructive=True)
-                
     else:
         print_log("\n\n     Could not find sensor_pack.\n     Configuring Sensor Pack...\n")
         status, import_config = omni.kit.commands.execute("URDFCreateImportConfig")
@@ -190,23 +179,19 @@ if _robot == "turtlebot3_burger":
         import_config.fix_base = False
         import_config.distance_scale = 1.0
         import_config.density = 0.0 
-
         status, sensor_pack = omni.kit.commands.execute(
             "URDFParseAndImportFile",
             urdf_path=parent_dir + defines.SENSOR_PACK_URDF_PATH,
             import_config=import_config,
             get_articulation_root=False,
         )
-
         omni.kit.commands.execute('ClearPhysicsComponentsCommand',
             stage=stage,
             prim_paths=[sensor_pack])
-
         omni.kit.commands.execute('MovePrims',
             paths_to_move={sensor_pack: sensorPackPrimPath},
             keep_world_transform=False,
             destructive=True)
-        
 elif _robot == "unitree_g1":
     from isaacsim_g1_locomotion.g1 import G1FlatTerrainPolicy
     for _ in defines.ROBOTS:
@@ -313,7 +298,6 @@ if _sensor_settings["Imu"]:
         orientation_filter_size=1,
     )
 app.update()
-
 
 # Creating an on-demand push graph with cameraHelper nodes to generate ROS image publishers
 keys = og.Controller.Keys
@@ -531,16 +515,6 @@ if _sensor_settings["Camera"] and _sensor_settings["Camera2"]:
     right_viewport = None
     left_viewport = None
 
-
-# Lidar : /Render/PostProcess/SDGPipeline/Isaac_PostProcessDispatchIsaacSimulationGate
-# Rgb : /Render/PostProcess/SDGPipeline/omni_kit_widget_viewport_ViewportTexture_0_LdrColorSDIsaacSimulationGate
-# Camerainfo : /Render/PostProcess/SDGPipeline/omni_kit_widget_viewport_ViewportTexture_0_PostProcessDispatchIsaacSimulationGate
-
-
-# Need to initialize physics getting any articulation..etc
-# simulation_context.initialize_physics()
-
-
 if _sensor_settings["Lidar"]:
     if _env == "Rivermark":
         lidar_offset = (-0.03, 0, 0.21)
@@ -550,8 +524,6 @@ if _sensor_settings["Lidar"]:
         lidar_prim_path = sensorPackPrimPath + defines.LIDAR_PREFIX_PATH + "/Lidar1"
     else:
         lidar_prim_path = robotPrimPath + "/g1_minimal/torso_link/head_joint/mid360_link" + "/Lidar"
-
-
     if _lidar_model == "Livox_MID360":
         lidar_prims=[]
         lidar_render_products = []
@@ -594,8 +566,6 @@ if _sensor_settings["Lidar"]:
     
         for _ in range(num_livox_parts):
             og.Controller.attribute(lidar_gate_paths[_]+".inputs:step").set(lidar_steps[_])
-
-
     else:
         _, lidar_prim = omni.kit.commands.execute(
             "IsaacSensorCreateRtxLidar",
@@ -737,7 +707,6 @@ if _robot == "turtlebot3_burger":
                 velocity = [0.0,0.0]
                 print(f"  Keybord : {event.input.name} >> Set Velocity : {velocity}")
                 need_update_vel = True
-
 
 elif _robot == "unitree_g1":
     print("[ G1 Control Instructions ]")
