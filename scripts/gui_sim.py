@@ -43,14 +43,13 @@ if config is not None:
     _performance_mode = config.get('performance_mode')
     _physics_steps = config.get('physics_steps')
     _render_steps = config.get('render_steps')
-    _render_steps = 50
     _physics_dt = 1.0 / _physics_steps
     _render_dt = 1.0 / _render_steps
-    # _sync_with_realtime = config.get('sync_with_realtime')
-    _sync_with_realtime = True
+    _sync_with_realtime = config.get('sync_with_realtime')
+    _sync_with_realtime = True  ## This for headless sim performance.
     _sensor_settings = config.get('sensor_settings')
     _lidar_model = config.get('lidar_model')
-    
+
     print(f"Environment: {_env}")
     print(f"Robot: {_robot}")
     print(f"Performance Mode: {_performance_mode}")
@@ -302,7 +301,7 @@ _settings = carb.settings.get_settings()
 # _settings.set_bool("/rtx/post/histogram/enabled", False) 
 
 # Brightness
-_settings.set_float("/rtx/sceneDb/ambientLightIntensity", 0.2)
+_settings.set_float("/rtx/sceneDb/ambientLightIntensity", 0.3)
 # omni.kit.commands.execute('ChangeSetting',
 # 	path='/rtx/sceneDb/ambientLightColor',
 # 	value=[1.0, 1.0, 1.0])

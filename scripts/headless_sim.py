@@ -321,14 +321,17 @@ if _sensor_settings["Camera"]:
             keys.CREATE_NODES: [
                 ("OnTick", "omni.graph.action.OnTick"),
                 ("createViewport", "isaacsim.core.nodes.IsaacCreateViewport"),
+                ("setViewportRes", "isaacsim.core.nodes.IsaacSetViewportResolution"),
                 ("getRenderProduct", "isaacsim.core.nodes.IsaacGetViewportRenderProduct"),
                 ("setCamera", "isaacsim.core.nodes.IsaacSetCameraOnRenderProduct"),
                 ("cameraHelperRgb", "isaacsim.ros2.bridge.ROS2CameraHelper"),
             ],
             keys.CONNECT: [
                 ("OnTick.outputs:tick", "createViewport.inputs:execIn"),
-                ("createViewport.outputs:execOut", "getRenderProduct.inputs:execIn"),
+                ("createViewport.outputs:execOut", "setViewportRes.inputs:execIn"),
+                ("createViewport.outputs:viewport", "setViewportRes.inputs:viewport"),
                 ("createViewport.outputs:viewport", "getRenderProduct.inputs:viewport"),
+                ("setViewportRes.outputs:execOut", "getRenderProduct.inputs:execIn"),
                 ("getRenderProduct.outputs:execOut", "setCamera.inputs:execIn"),
                 ("getRenderProduct.outputs:renderProductPath", "setCamera.inputs:renderProductPath"),
                 ("setCamera.outputs:execOut", "cameraHelperRgb.inputs:execIn"),
@@ -336,6 +339,8 @@ if _sensor_settings["Camera"]:
             ],
             keys.SET_VALUES: [
                 ("createViewport.inputs:viewportId", 0),
+                ("setViewportRes.inputs:height", 72),
+                ("setViewportRes.inputs:width", 128),
                 ("cameraHelperRgb.inputs:frameId", "camera_link"),
                 ("cameraHelperRgb.inputs:topicName", "dummy_rgb"),
                 ("cameraHelperRgb.inputs:type", "rgb"),
@@ -699,12 +704,6 @@ from pynput import keyboard
 import numpy as np
 if _robot == "turtlebot3_burger":
     my_controller.reset()
-    print("[ Turtlebot Control Instructions ]")
-    print(" ↑ : Increase linear velocity")
-    print(" ↓ : Decrease linear velocity")
-    print(" ← : Rotate Left")
-    print(" → : Rotate Right")
-    print(" S : Stop")
 
     # Setup Keyboard
     velocity = [0.0, 0.0]
@@ -740,15 +739,15 @@ if _robot == "turtlebot3_burger":
 
     def on_key_release(key):
         pass
-
-
-elif _robot == "unitree_g1":
-    print("[ G1 Control Instructions ]")
-    print(" ↑ : Move Forward")
+    
+    print("[ Turtlebot Control Instructions ]")
+    print(" ↑ : Increase linear velocity")
+    print(" ↓ : Decrease linear velocity")
     print(" ← : Rotate Left")
     print(" → : Rotate Right")
-    print(" ↓ or None : Stop")
+    print(" S : Stop")
 
+elif _robot == "unitree_g1":
     _key_to_control = {
         keyboard.Key.up: [0.5, 0, 0],
         keyboard.Key.down: [0, 0, 0],
@@ -768,7 +767,11 @@ elif _robot == "unitree_g1":
         if key in _key_to_control:
             base_command = _key_to_control[keyboard.Key.down]
         
-
+    print("[ G1 Control Instructions ]")
+    print(" ↑ : Move Forward")
+    print(" ← : Rotate Left")
+    print(" → : Rotate Right")
+    print(" ↓ or None : Stop")
 
 else:
     os.system("pgrep -f rviz | xargs -r kill -15")
@@ -788,6 +791,8 @@ trace_prim = robotPrimPath+"/base_footprint" if _robot == "turtlebot3_burger" el
 distance_calculator = DistanceCalculator(trace_prim)
 print(f"Target tracing prim : {trace_prim}")
 
+print("Starting Headless SIM simulation...")
+print("Please wait until GUI SIM is ready.")
 world.play()
 while app.is_running():
     app.update()

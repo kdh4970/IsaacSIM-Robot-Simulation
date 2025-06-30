@@ -30,7 +30,7 @@ Sensors and rates :
 
 ## Not Implemented Features  
 Unitree G1 - TF and Odom
-Dual Sim - mono camera
+Dual Sim - stereo camera
 
 ## Dependencies  
 
@@ -55,6 +55,9 @@ git clone --recursive https://github.com/kdh4970/IsaacSIM-Robot-Simulation.git
 Change below things in *run_single_sim.sh* and *run_dual_sim.sh* file.  
  - Check IsaacSIM path. (default : ~/isaacsim)
  - Check ROS2 path.  
+
+If you have a single GPU, remove *export CUDA_VISIBLE_DEVICES* in *run_dual_sim.sh*.  
+And also change the GPU number if you need.  
 
 ### 3. Get USD Scenes  
 1. Unzip scene datas in usd_scenes directory.  
@@ -88,7 +91,8 @@ Then, you can control the robot by using keyboard. (Up, Down, Right, Left)
 
 
 #### (Unstable) Dual Simulation : Launch two isaacsim. (headless_sim and gui_sim)
-It may cause GPU crash error.
+Before using this, edit *CUDA_VISIBLE_DEVICES* in *run_dual_sim.sh*.  
+GUI SIM must use display GPU(id = $DISPLAY).  
 ```
 cd IsaacSIM-Robot-Simulation
 ./run_dual_sim.sh
@@ -97,6 +101,9 @@ cd IsaacSIM-Robot-Simulation
 Before control the robot, click Headless sim console once.  
 Then, you can control the robot by using keyboard. (Up, Down, Right, Left)  
 
+### 6. Optional
+
+When simulation performance is good enough, Using cyclone_dds would be better for stability of sensor rates.  
 
 ## Demo
 
