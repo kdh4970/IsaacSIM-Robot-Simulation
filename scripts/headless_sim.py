@@ -87,8 +87,6 @@ def print_log(text):
 from isaacsim import SimulationApp
 launch_config = defines.LAUNCH_CONFIG
 launch_config["headless"] = True
-launch_config["multi_gpu"] = False
-launch_config["rtx_realtime_mgpu_enabled"] = False
 
 
 app = SimulationApp(launch_config=launch_config)
@@ -317,6 +315,41 @@ app.update()
 
 # Creating an on-demand push graph with cameraHelper nodes to generate ROS image publishers
 keys = og.Controller.Keys
+## Dummy Camera : For preventing gpu crash
+if _sensor_settings["Camera"]:
+    cameraNodeGraph_mono = {
+            keys.CREATE_NODES: [
+                ("OnTick", "omni.graph.action.OnTick"),
+                ("createViewport", "isaacsim.core.nodes.IsaacCreateViewport"),
+                ("getRenderProduct", "isaacsim.core.nodes.IsaacGetViewportRenderProduct"),
+                ("setCamera", "isaacsim.core.nodes.IsaacSetCameraOnRenderProduct"),
+                ("cameraHelperRgb", "isaacsim.ros2.bridge.ROS2CameraHelper"),
+            ],
+            keys.CONNECT: [
+                ("OnTick.outputs:tick", "createViewport.inputs:execIn"),
+                ("createViewport.outputs:execOut", "getRenderProduct.inputs:execIn"),
+                ("createViewport.outputs:viewport", "getRenderProduct.inputs:viewport"),
+                ("getRenderProduct.outputs:execOut", "setCamera.inputs:execIn"),
+                ("getRenderProduct.outputs:renderProductPath", "setCamera.inputs:renderProductPath"),
+                ("setCamera.outputs:execOut", "cameraHelperRgb.inputs:execIn"),
+                ("getRenderProduct.outputs:renderProductPath", "cameraHelperRgb.inputs:renderProductPath"),
+            ],
+            keys.SET_VALUES: [
+                ("createViewport.inputs:viewportId", 0),
+                ("cameraHelperRgb.inputs:frameId", "camera_link"),
+                ("cameraHelperRgb.inputs:topicName", "dummy_rgb"),
+                ("cameraHelperRgb.inputs:type", "rgb"),
+                ("setCamera.inputs:cameraPrim", [usdrt.Sdf.Path(camera1_prim_path)]),
+            ],
+        }
+    (ros_camera_graph, _, _, _) = og.Controller.edit(
+        {
+            "graph_path": defines.ROS_CAMERA_GRAPH_PATH,
+            "evaluator_name": "push",
+            "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_SIMULATION,
+        },
+        cameraNodeGraph_mono,
+    )
 if _sensor_settings["Imu"]:
     
     (ros_imu_graph, _, _, _) = og.Controller.edit(
@@ -432,7 +465,7 @@ if _sensor_settings["TfOdom"]:
             ],
         },
     )
-
+# if _sensor_settings["Camera"]: og.Controller.evaluate_sync(ros_camera_graph)
 app.update()
 
 
@@ -452,7 +485,7 @@ if _sensor_settings["Lidar"]:
         lidar_render_products = []
         writers = []
         num_livox_parts = 4
-        lidar_steps = [3,4,5,7,11]
+        lidar_steps = [2,3,4,5,11]
 
         # Create parts of MID360
         for _ in range(num_livox_parts):
@@ -500,6 +533,7 @@ if _sensor_settings["Lidar"]:
             translation=lidar_offset,
             orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),  # Gf.Quatd is w,i,j,k
         )
+
         # RTX sensors are cameras and must be assigned to their own render product
         lidar_render_product = rep.create.render_product(lidar_prim.GetPath(), [1, 1], name="Isaac")
         # Create Point cloud publisher pipeline in the post process graph
@@ -515,6 +549,7 @@ if _sensor_settings["Lidar"]:
         lidar_gate_path = "/Render/PostProcess/SDGPipeline/Isaac_PostProcessDispatchIsaacSimulationGate"
         lidar_step_size = 1
         og.Controller.attribute(lidar_gate_path+".inputs:step").set(lidar_step_size)
+
 
 # Change Settings
 import carb

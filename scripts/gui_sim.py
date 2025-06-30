@@ -289,101 +289,17 @@ if _sensor_settings["Camera"] and _sensor_settings["Camera2"]:
 
 
 
-# if _sensor_settings["Lidar"]:
-#     if _env == "Rivermark":
-#         lidar_offset = (-0.03, 0, 0.21)
-#     else:
-#         lidar_offset = (-0.07, 0, 0.4)
-#     if _robot == "turtlebot3_burger":
-#         lidar_prim_path = "/Lidar1"
-#     else:
-#         lidar_prim_path = "/Lidar"
-
-
-#     if _lidar_model == "Livox_MID360":
-#         lidar_prims=[]
-#         lidar_render_products = []
-#         writers = []
-#         num_livox_parts = 5
-#         lidar_steps = [11,12,13,14,15]
-
-#         # Create parts of MID360
-#         for _ in range(num_livox_parts):
-#             _, lidar_prim = omni.kit.commands.execute(
-#                 "IsaacSensorCreateRtxLidar",
-#                 path=lidar_prim_path,
-#                 parent=None,
-#                 config="MID360_" + str(_+1),
-#                 # translation=(-0.03, 0, 0.18), # this for 1x scale
-#                 translation=lidar_offset, # this for 2x scale
-#                 # translation=(-0.1, 0, 0.57), # this for 3x scale
-#                 orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),  # Gf.Quatd is w,i,j,k
-#             )
-#             lidar_prims.append(lidar_prim)
-
-#             # RTX sensors are cameras and must be assigned to their own render product
-#             lidar_render_product = rep.create.render_product(lidar_prim.GetPath(), [1, 1], name="Isaac")
-#             lidar_render_products.append(lidar_render_product)
-
-#             # Create Point cloud publisher pipeline in the post process graph
-#             writer = rep.writers.get("RtxLidar" + "ROS2PublishPointCloud")
-#             writer.initialize(topicName="point_cloud", frameId="lidar_link")
-#             writer.attach([lidar_render_product])
-#             writers.append(writer)
-#             if _sensor_settings["DebugLidar"]:
-#                 # Create the debug draw pipeline in the post process graph
-#                 writerd = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
-#                 writerd.attach([lidar_render_product])
-#                 writers.append(writerd)
-
-#         lidar_gate_paths = [
-#             "/Render/PostProcess/SDGPipeline/Isaac_PostProcessDispatchIsaacSimulationGate",
-#             "/Render/PostProcess/SDGPipeline/Isaac_01_PostProcessDispatchIsaacSimulationGate",
-#             "/Render/PostProcess/SDGPipeline/Isaac_02_PostProcessDispatchIsaacSimulationGate",
-#             "/Render/PostProcess/SDGPipeline/Isaac_03_PostProcessDispatchIsaacSimulationGate",
-#             "/Render/PostProcess/SDGPipeline/Isaac_04_PostProcessDispatchIsaacSimulationGate"
-#             ]
-#         for i in range(num_livox_parts):
-#             og.Controller.attribute(lidar_gate_paths[i]+".inputs:step").set(lidar_steps[_])
-            
-
-#     else:
-#         _, lidar_prim = omni.kit.commands.execute(
-#             "IsaacSensorCreateRtxLidar",
-#             path=lidar_prim_path,
-#             parent=None,
-#             config=_lidar_model,
-#             translation=lidar_offset,
-#             orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),  # Gf.Quatd is w,i,j,k
-#         )
-#         # RTX sensors are cameras and must be assigned to their own render product
-#         lidar_render_product = rep.create.render_product(lidar_prim.GetPath(), [1, 1], name="Isaac")
-#         # Create Point cloud publisher pipeline in the post process graph
-#         writer = rep.writers.get("RtxLidar" + "ROS2PublishPointCloud")
-#         writer.initialize(topicName="point_cloud", frameId="lidar_link")
-#         writer.attach([lidar_render_product])
-
-#         if _sensor_settings["DebugLidar"]:
-#             # Create the debug draw pipeline in the post process graph
-#             writer1 = rep.writers.get("RtxLidar" + "DebugDrawPointCloud")
-#             writer1.attach([lidar_render_product])
-
-#         lidar_gate_path = "/Render/PostProcess/SDGPipeline/Isaac_PostProcessDispatchIsaacSimulationGate"
-#         lidar_step_size = 3
-#         og.Controller.attribute(lidar_gate_path+".inputs:step").set(lidar_step_size)
-
-
 import carb
 import carb.settings
 _settings = carb.settings.get_settings()
-# For Performance
-_settings.set_bool("/rtx/ecoMode/enabled", False) 
-_settings.set_bool("/rtx/directLighting/enabled", False) 
-_settings.set_bool("/rtx/indirectDiffuse/enabled", False) 
-_settings.set_bool("/rtx/ambientOcclusion/enabled", False) 
-_settings.set_bool("/rtx/reflections/enabled", False) 
-_settings.set_bool("/rtx/translucency/enabled", False) 
-_settings.set_bool("/rtx/post/histogram/enabled", False) 
+# # For Performance
+# _settings.set_bool("/rtx/ecoMode/enabled", False) 
+# _settings.set_bool("/rtx/directLighting/enabled", False) 
+# _settings.set_bool("/rtx/indirectDiffuse/enabled", False) 
+# _settings.set_bool("/rtx/ambientOcclusion/enabled", False) 
+# _settings.set_bool("/rtx/reflections/enabled", False) 
+# _settings.set_bool("/rtx/translucency/enabled", False) 
+# _settings.set_bool("/rtx/post/histogram/enabled", False) 
 
 # Brightness
 _settings.set_float("/rtx/sceneDb/ambientLightIntensity", 0.2)
