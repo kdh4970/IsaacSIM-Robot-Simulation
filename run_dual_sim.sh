@@ -48,7 +48,7 @@ echo "Launching IsaacSIM headless...    PID : $headless_pid"
 sleep 20
 
 ## GUI SIM : CUDA_VISIBLE_DEVICES must be set to $DISPLAY value.
-gnome-terminal -- bash -c "cd $isaacsim_path; export CUDA_VISIBLE_DEVICES=$DISPLAY;$isaacsim_path/python.sh $wd/scripts/gui_sim.py; exec bash" &
+gnome-terminal -- bash -c "cd $isaacsim_path; export CUDA_VISIBLE_DEVICES=0;$isaacsim_path/python.sh $wd/scripts/gui_sim.py; exec bash" &
 gui_pid=$!
 echo "Launching IsaacSIM GUI...         PID : $gui_pid"
 echo ""
